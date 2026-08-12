@@ -1,0 +1,11 @@
+name: Chess
+version: '${version}'
+main: codes.castled.chess.Chess
+api-version: '1.21'
+folia-supported: true
+softdepend: [ResourcePackManager]
+description: Play chess in a native Paper dialog board.
+commands:
+  chess:
+    description: Open the chess board or manage duel requests
+    usage: /chess <open|duel|accept|decline|help>

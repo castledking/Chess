@@ -1,0 +1,64 @@
+# General settings for the Chess plugin.
+
+# Chess duel request settings.
+duel-request:
+  # A duel request expires after this many seconds.
+  duel-request-expires-in-seconds: 60
+
+# Game settings.
+chess-game:
+  # Sounds played at the given events. Use 'no.sound' to disable one.
+  sounds:
+    move: 'block.anvil.break'
+    check: 'block.chain.fall'
+    win: 'entity.player.levelup'
+    loss: 'block.beacon.deactivate'
+    draw: 'event.raid.horn'
+
+  draw:
+    # Players can send a new draw offer after this many seconds.
+    offer-cooldown-in-seconds: 60
+    # A sent draw offer expires after this many seconds.
+    offer-expires-in-seconds: 30
+
+  surrender:
+    # A surrender confirmation expires after this many seconds.
+    offer-expires-in-seconds: 5
+
+# Dialog board appearance and behaviour.
+ui:
+  dialog:
+    # Dialog title (MiniMessage).
+    title: '<gold>Chess</gold>'
+    # Whether pressing ESC closes the board (never resigns).
+    allow-escape-close: true
+    # If true each player sees the board from their own colour's side.
+    orientation-follows-player: true
+    show-coordinates: true
+    show-legal-moves: true
+    show-last-move: true
+    show-captured-pieces: true
+    show-clock: true
+    # Minimum ticks between clock-driven redraws (>= 20).
+    clock-refresh-ticks: 20
+    # Render resource-pack piece glyphs (vs Unicode chess symbols when false).
+    use-glyphs: true
+    # Width of each of the 64 board buttons in the 8x8 grid. Resign/Draw/Flip are rendered as
+    # clickable body text above the board, so the grid stays exactly 64 uniform cells.
+    # Scaling the texture pack glyphs larger (e.g. 18px instead of 16px) reduces padding inside
+    # each button — in that case also increase this width to prevent KaMenu from scrolling the
+    # glyph when it exceeds available padding.
+    square-button-width: 20
+
+# Resource pack delivery.
+resource-pack:
+  # Master switch. true: the plugin manages the pack (registers it with ResourcePackManager if
+  # installed, otherwise sends it directly via the url below). false: the plugin does NOTHING —
+  # it neither sends nor merges the pack, so you can manage it yourself (e.g. remove it from
+  # ResourcePackManager) while keeping the plugin installed. The pack file is still written to
+  # plugins/Chess/resourcepack.zip either way.
+  use-resourcepack: true
+  # Direct-send URL, used ONLY when ResourcePackManager is NOT installed. Host the exact file at
+  # plugins/Chess/resourcepack.zip somewhere and point this at it; the SHA-1 is computed
+  # automatically. Leave blank to send nothing directly.
+  url: ''

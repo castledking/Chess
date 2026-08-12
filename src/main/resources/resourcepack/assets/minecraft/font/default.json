@@ -1,0 +1,19 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "minecraft:guis/chess.png",
+      "ascent": 13,
+      "height": 256,
+      "chars": [
+        "日"
+      ]
+    },
+    {
+      "type": "space",
+      "advances": {
+        "月": -8
+      }
+    }
+  ]
+}

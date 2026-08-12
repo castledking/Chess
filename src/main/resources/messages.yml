@@ -1,0 +1,89 @@
+# Adjust any plugin-sent message here. Use color codes with '&'.
+messages:
+
+  # Any chess command related message. Use [opponent] and [mode] as placeholders.
+  chess-command:
+    cannot-duel-yourself: '&cYou cannot duel yourself.'
+    opponent-not-online: '&cYour requested opponent is not online.'
+    you-already-in-game: '&cYou are already playing a chess game currently.'
+    opponent-already-in-game: '&cYour requested opponent is currently playing a chess game.'
+    both-in-game: '&cBoth you and your requested opponent are currently playing a chess game.'
+    not-playing: '&cYou are currently not playing a chess game.'
+    invalid-time-mode: '&cThis time mode is invalid. Please select one from the shown time modes.'
+    already-requested-duel: '&cYou have already sent a duel request to this player. Wait for them to accept or decline.'
+    duel-request-to-expired: '&7The duel request to [opponent] has expired.'
+    duel-request-from-expired: '&7The duel request from [opponent] has expired.'
+    duel-request-received: '&3You have received a chess duel request from &6[opponent]&3, Time mode: &6[mode]&3. React with &6/chess accept [opponent] &3or &6/chess decline [opponent]&3.'
+    successfully-sent-duel-request: '&aSuccessfully sent a chess duel request to &6[opponent]&a, Time mode: &6[mode]&a.'
+    request-sender-offline: '&cThis player is not online.'
+    request-sender-playing: '&cThis player is already in a chess game.'
+    request-sender-receiver-playing: '&cBoth you and the request sender are already in a chess game.'
+    no-ongoing-request: '&cThere is no ongoing duel request from this player.'
+    you-declined-request: '&7You have declined the duel request from [opponent].'
+    opponent-declined-request: '&7[opponent] has declined your duel request.'
+    invalid-args-command: '&cInvalid arguments. Use &6/chess help &cto display all the existing commands.'
+
+  # Any chess game related message.
+  chess-game:
+
+    # Messages displayed in chat.
+    chat:
+      started: '&bYour chess game has started. Close the board with the [Close] button and reopen it with &6/chess open &bat any time.'
+      opponent-moved: '&bYour opponent has made a move. Use &6/chess open &bto reopen the chess board.'
+
+    # Info messages shown beneath the board.
+    info:
+      not-your-turn: '&cIt is not your turn. Wait for your opponent to make a move.'
+      no-piece-selected: '&cYou have not selected a piece to move yet.'
+      invalid-square: '&cYour selected piece cannot move to that square.'
+      pick-promotion-piece: '&6Pick one of the four promotion pieces.'
+
+    # Draw control messages. Use [cooldown] as a placeholder.
+    draw:
+      cooldown: '&cWait &6[cooldown] &cbefore sending a new draw offer.'
+      offer-received: '&7Your opponent has offered a draw. &6Click Draw &7to &aaccept&7.'
+      confirm-offer: '&6Click Draw again &7to &aconfirm &7the draw.'
+      offer-sent: '&7You have sent a draw offer to your opponent.'
+
+    # Surrender control messages.
+    surrender:
+      confirm: '&6Click Resign again &7to &aconfirm&7.'
+
+    # Text shown on the Paper dialog board. These use MiniMessage tags (not '&' codes)
+    # because they are rendered as chat components by the dialog, not by legacy chat.
+    dialog:
+      players: <white>[white]</white> <gray>vs</gray> <white>[black]</white>
+      turn: <gray>Turn:</gray> <yellow>[player]</yellow>
+      your-color: <gray>You play</gray> <yellow>[color]</yellow>
+      spectating: <gray><italic>Spectating (read-only)</italic></gray>
+      white: White
+      black: Black
+      in-check: <red>[player] is in check!</red>
+      clock: <gray>Clock —</gray> <white>[white]</white> <gray>|</gray> <white>[black]</white>
+      last-move: <gray>Last move:</gray> <aqua>[from]→[to]</aqua>
+      captured-white: <gray>White captured:</gray> [pieces]
+      captured-black: <gray>Black captured:</gray> [pieces]
+      captured-none: <dark_gray>—</dark_gray>
+      control-resign: <red>[Resign]</red>
+      control-draw: <gold>[Draw]</gold>
+      control-draw-accept: <green>[Accept Draw]</green>
+      control-flip: <aqua>[Flip]</aqua>
+      control-close: <gray>[Close]</gray>
+      tooltip-coord: <gray>[coord]</gray>
+      tooltip-piece: <white>[color] [piece]</white>
+      tooltip-capture: <red>Capture</red>
+      tooltip-legal: <green>Legal move</green>
+      tooltip-last-move: <aqua>Last move</aqua>
+      tooltip-check: <red>Check!</red>
+      piece-pawn: Pawn
+      piece-knight: Knight
+      piece-bishop: Bishop
+      piece-rook: Rook
+      piece-queen: Queen
+      piece-king: King
+      promotion-title: <gold>Choose Promotion</gold>
+      promotion-prompt: <gray>Select the piece to promote your pawn to.</gray>
+
+  # Messages about the chess UI itself.
+  ui:
+    promotion-required: '&6Choose a promotion piece before continuing.'

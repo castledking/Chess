@@ -1,0 +1,516 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "minecraft:custom_model_data",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/paper"
+    },
+    "entries": [
+      {
+        "threshold": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/empty_yellow"
+        }
+      },
+      {
+        "threshold": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/empty_orange"
+        }
+      },
+      {
+        "threshold": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/hour"
+        }
+      },
+      {
+        "threshold": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/hour_one"
+        }
+      },
+      {
+        "threshold": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/hour_zero"
+        }
+      },
+      {
+        "threshold": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/minute"
+        }
+      },
+      {
+        "threshold": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/minute_one"
+        }
+      },
+      {
+        "threshold": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/minute_zero"
+        }
+      },
+      {
+        "threshold": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/second"
+        }
+      },
+      {
+        "threshold": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/second_one"
+        }
+      },
+      {
+        "threshold": 11,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/second_zero"
+        }
+      },
+      {
+        "threshold": 12,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/info"
+        }
+      },
+      {
+        "threshold": 13,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/surrender"
+        }
+      },
+      {
+        "threshold": 14,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/draw"
+        }
+      },
+      {
+        "threshold": 31,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/hour_running"
+        }
+      },
+      {
+        "threshold": 41,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/hour_one_running"
+        }
+      },
+      {
+        "threshold": 51,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/hour_zero_running"
+        }
+      },
+      {
+        "threshold": 61,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/minute_running"
+        }
+      },
+      {
+        "threshold": 71,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/minute_one_running"
+        }
+      },
+      {
+        "threshold": 81,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/minute_zero_running"
+        }
+      },
+      {
+        "threshold": 91,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/second_running"
+        }
+      },
+      {
+        "threshold": 101,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/second_one_running"
+        }
+      },
+      {
+        "threshold": 111,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/second_zero_running"
+        }
+      },
+      {
+        "threshold": 121,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/info_gold"
+        }
+      },
+      {
+        "threshold": 131,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/surrender_confirm"
+        }
+      },
+      {
+        "threshold": 141,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/draw_confirm"
+        }
+      },
+      {
+        "threshold": 142,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/draw_accept"
+        }
+      },
+      {
+        "threshold": 143,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/draw_sent"
+        }
+      },
+      {
+        "threshold": 1001,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_pawn"
+        }
+      },
+      {
+        "threshold": 1002,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_rook"
+        }
+      },
+      {
+        "threshold": 1003,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_knight"
+        }
+      },
+      {
+        "threshold": 1004,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_bishop"
+        }
+      },
+      {
+        "threshold": 1005,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_queen"
+        }
+      },
+      {
+        "threshold": 1006,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_king"
+        }
+      },
+      {
+        "threshold": 1007,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_pawn"
+        }
+      },
+      {
+        "threshold": 1008,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_rook"
+        }
+      },
+      {
+        "threshold": 1009,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_knight"
+        }
+      },
+      {
+        "threshold": 1010,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_bishop"
+        }
+      },
+      {
+        "threshold": 1011,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_queen"
+        }
+      },
+      {
+        "threshold": 1012,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_king"
+        }
+      },
+      {
+        "threshold": 1013,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_queen_promotion"
+        }
+      },
+      {
+        "threshold": 1014,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_queen_promotion"
+        }
+      },
+      {
+        "threshold": 1015,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_bishop_promotion"
+        }
+      },
+      {
+        "threshold": 1016,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_bishop_promotion"
+        }
+      },
+      {
+        "threshold": 1017,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_knight_promotion"
+        }
+      },
+      {
+        "threshold": 1018,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_knight_promotion"
+        }
+      },
+      {
+        "threshold": 1019,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_rook_promotion"
+        }
+      },
+      {
+        "threshold": 1020,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_rook_promotion"
+        }
+      },
+      {
+        "threshold": 10011,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_pawn_yellow"
+        }
+      },
+      {
+        "threshold": 10012,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_pawn_orange"
+        }
+      },
+      {
+        "threshold": 10021,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_rook_yellow"
+        }
+      },
+      {
+        "threshold": 10022,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_rook_orange"
+        }
+      },
+      {
+        "threshold": 10031,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_knight_yellow"
+        }
+      },
+      {
+        "threshold": 10032,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_knight_orange"
+        }
+      },
+      {
+        "threshold": 10041,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_bishop_yellow"
+        }
+      },
+      {
+        "threshold": 10042,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_bishop_orange"
+        }
+      },
+      {
+        "threshold": 10051,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_queen_yellow"
+        }
+      },
+      {
+        "threshold": 10052,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_queen_orange"
+        }
+      },
+      {
+        "threshold": 10061,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_king_yellow"
+        }
+      },
+      {
+        "threshold": 10062,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/white_king_orange"
+        }
+      },
+      {
+        "threshold": 10071,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_pawn_yellow"
+        }
+      },
+      {
+        "threshold": 10072,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_pawn_orange"
+        }
+      },
+      {
+        "threshold": 10081,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_rook_yellow"
+        }
+      },
+      {
+        "threshold": 10082,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_rook_orange"
+        }
+      },
+      {
+        "threshold": 10091,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_knight_yellow"
+        }
+      },
+      {
+        "threshold": 10092,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_knight_orange"
+        }
+      },
+      {
+        "threshold": 10101,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_bishop_yellow"
+        }
+      },
+      {
+        "threshold": 10102,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_bishop_orange"
+        }
+      },
+      {
+        "threshold": 10111,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_queen_yellow"
+        }
+      },
+      {
+        "threshold": 10112,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_queen_orange"
+        }
+      },
+      {
+        "threshold": 10121,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_king_yellow"
+        }
+      },
+      {
+        "threshold": 10122,
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/black_king_orange"
+        }
+      }
+    ]
+  }
+}

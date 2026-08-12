@@ -1,0 +1,58 @@
+name: Build verification
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Chess
+        uses: actions/checkout@v4
+
+      - name: Check out PocketChess engine
+        uses: actions/checkout@v4
+        with:
+          repository: dxzell/PocketChess
+          ref: f7288f0431c60eb889070bd3ced80d02905169ec
+          path: pocket-chess
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: |
+            pocket-chess/pom.xml
+            pocket-chess/pocket-chess-api/pom.xml
+            pocket-chess/pocket-chess-common/pom.xml
+
+      - name: Install PocketChess engine
+        run: >-
+          mvn --batch-mode --no-transfer-progress
+          --file pocket-chess/pom.xml
+          --projects pocket-chess-api,pocket-chess-common
+          --also-make
+          install
+          -DskipTests
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.5.1"
+
+      - name: Build and verify
+        run: gradle clean build --no-daemon
+
+      - name: Upload plugin JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: Chess-${{ github.sha }}
+          path: build/libs/Chess.jar
+          if-no-files-found: error
