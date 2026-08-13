@@ -1,6 +1,13 @@
 {
   "providers": [
     {
+      "type": "space",
+      "advances": {
+        "\ue0fd": -3,
+        "\ue0fe": -4
+      }
+    },
+    {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn.png",
       "ascent": 12,
@@ -111,8 +118,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/empty_light.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue010"
       ]
@@ -120,8 +127,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/empty_dark.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue011"
       ]
@@ -129,8 +136,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue301"
       ]
@@ -138,8 +145,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_rook_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue302"
       ]
@@ -147,8 +154,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_knight_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue303"
       ]
@@ -156,8 +163,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_bishop_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue304"
       ]
@@ -165,8 +172,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_queen_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue305"
       ]
@@ -174,8 +181,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_king_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue306"
       ]
@@ -183,8 +190,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_pawn_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue307"
       ]
@@ -192,8 +199,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_rook_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue308"
       ]
@@ -201,8 +208,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_knight_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue309"
       ]
@@ -210,8 +217,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_bishop_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue30a"
       ]
@@ -219,8 +226,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_queen_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue30b"
       ]
@@ -228,8 +235,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_king_light_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue30c"
       ]
@@ -237,8 +244,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue401"
       ]
@@ -246,8 +253,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_rook_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue402"
       ]
@@ -255,8 +262,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_knight_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue403"
       ]
@@ -264,8 +271,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_bishop_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue404"
       ]
@@ -273,8 +280,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_queen_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue405"
       ]
@@ -282,8 +289,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_king_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue406"
       ]
@@ -291,8 +298,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_pawn_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue407"
       ]
@@ -300,8 +307,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_rook_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue408"
       ]
@@ -309,8 +316,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_knight_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue409"
       ]
@@ -318,8 +325,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_bishop_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue40a"
       ]
@@ -327,8 +334,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_queen_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue40b"
       ]
@@ -336,8 +343,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_king_dark_square.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue40c"
       ]
@@ -345,8 +352,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/empty_light_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue014"
       ]
@@ -354,8 +361,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue501"
       ]
@@ -363,8 +370,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_rook_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue502"
       ]
@@ -372,8 +379,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_knight_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue503"
       ]
@@ -381,8 +388,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_bishop_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue504"
       ]
@@ -390,8 +397,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_queen_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue505"
       ]
@@ -399,8 +406,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_king_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue506"
       ]
@@ -408,8 +415,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_pawn_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue507"
       ]
@@ -417,8 +424,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_rook_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue508"
       ]
@@ -426,8 +433,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_knight_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue509"
       ]
@@ -435,8 +442,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_bishop_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue50a"
       ]
@@ -444,8 +451,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_queen_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue50b"
       ]
@@ -453,8 +460,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_king_light_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue50c"
       ]
@@ -462,8 +469,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/empty_dark_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue015"
       ]
@@ -471,8 +478,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue601"
       ]
@@ -480,8 +487,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_rook_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue602"
       ]
@@ -489,8 +496,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_knight_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue603"
       ]
@@ -498,8 +505,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_bishop_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue604"
       ]
@@ -507,8 +514,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_queen_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue605"
       ]
@@ -516,8 +523,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_king_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue606"
       ]
@@ -525,8 +532,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_pawn_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue607"
       ]
@@ -534,8 +541,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_rook_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue608"
       ]
@@ -543,8 +550,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_knight_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue609"
       ]
@@ -552,8 +559,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_bishop_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue60a"
       ]
@@ -561,8 +568,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_queen_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue60b"
       ]
@@ -570,8 +577,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_king_dark_square_selected.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue60c"
       ]
@@ -579,8 +586,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/empty_light_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue016"
       ]
@@ -588,8 +595,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue701"
       ]
@@ -597,8 +604,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_rook_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue702"
       ]
@@ -606,8 +613,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_knight_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue703"
       ]
@@ -615,8 +622,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_bishop_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue704"
       ]
@@ -624,8 +631,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_queen_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue705"
       ]
@@ -633,8 +640,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_king_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue706"
       ]
@@ -642,8 +649,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_pawn_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue707"
       ]
@@ -651,8 +658,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_rook_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue708"
       ]
@@ -660,8 +667,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_knight_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue709"
       ]
@@ -669,8 +676,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_bishop_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue70a"
       ]
@@ -678,8 +685,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_queen_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue70b"
       ]
@@ -687,8 +694,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_king_light_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue70c"
       ]
@@ -696,8 +703,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/empty_dark_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue017"
       ]
@@ -705,8 +712,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_pawn_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue801"
       ]
@@ -714,8 +721,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_rook_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue802"
       ]
@@ -723,8 +730,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_knight_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue803"
       ]
@@ -732,8 +739,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_bishop_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue804"
       ]
@@ -741,8 +748,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_queen_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue805"
       ]
@@ -750,8 +757,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/white_king_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue806"
       ]
@@ -759,8 +766,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_pawn_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue807"
       ]
@@ -768,8 +775,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_rook_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue808"
       ]
@@ -777,8 +784,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_knight_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue809"
       ]
@@ -786,8 +793,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_bishop_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue80a"
       ]
@@ -795,8 +802,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_queen_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue80b"
       ]
@@ -804,8 +811,8 @@
     {
       "type": "bitmap",
       "file": "minecraft:item/black_king_dark_square_legal.png",
-      "ascent": 12,
-      "height": 16,
+      "ascent": 14,
+      "height": 22,
       "chars": [
         "\ue80c"
       ]

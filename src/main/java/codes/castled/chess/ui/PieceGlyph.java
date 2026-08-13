@@ -97,6 +97,14 @@ public final class PieceGlyph {
 
   private static final String FONT_CLOSE = "</font>";
 
+  // Minecraft gives each 20px action button a 2px label margin, leaving 16px
+  // before DrawnTextConsumer enables its horizontal marquee. A fully opaque
+  // 22px bitmap has a 23px advance. These invisible advances make the label
+  // measure 16px while leaving the bitmap itself 22px wide, so it overdraws
+  // the button and the grid's 2px gap without scrolling.
+  private static final char BOARD_TILE_LEFT_SPACER = '\uE0FD';
+  private static final char BOARD_TILE_RIGHT_SPACER = '\uE0FE';
+
   private final boolean glyphs;
 
   public PieceGlyph(boolean glyphs) {
@@ -105,6 +113,10 @@ public final class PieceGlyph {
 
   private static String inFont(char codepoint) {
     return FONT_OPEN + codepoint + FONT_CLOSE;
+  }
+
+  private static String boardTile(char codepoint) {
+    return FONT_OPEN + BOARD_TILE_LEFT_SPACER + codepoint + BOARD_TILE_RIGHT_SPACER + FONT_CLOSE;
   }
 
   /**
@@ -131,7 +143,7 @@ public final class PieceGlyph {
               base + (light ? LIGHT_SQUARE_SELECTED_OFFSET : DARK_SQUARE_SELECTED_OFFSET);
           case LEGAL -> base + (light ? LIGHT_SQUARE_LEGAL_OFFSET : DARK_SQUARE_LEGAL_OFFSET);
         };
-    return inFont((char) codepoint);
+    return boardTile((char) codepoint);
   }
 
   /**
@@ -165,9 +177,9 @@ public final class PieceGlyph {
       };
     }
     return switch (highlight) {
-      case NONE -> inFont(light ? EMPTY_LIGHT : EMPTY_DARK);
-      case SELECTED, LAST_MOVE -> inFont(light ? EMPTY_LIGHT_SELECTED : EMPTY_DARK_SELECTED);
-      case LEGAL -> inFont(light ? EMPTY_LIGHT_LEGAL : EMPTY_DARK_LEGAL);
+      case NONE -> boardTile(light ? EMPTY_LIGHT : EMPTY_DARK);
+      case SELECTED, LAST_MOVE -> boardTile(light ? EMPTY_LIGHT_SELECTED : EMPTY_DARK_SELECTED);
+      case LEGAL -> boardTile(light ? EMPTY_LIGHT_LEGAL : EMPTY_DARK_LEGAL);
     };
   }
 

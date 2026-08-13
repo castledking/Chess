@@ -45,9 +45,9 @@ ui:
     use-glyphs: true
     # Width of each of the 64 board buttons in the 8x8 grid. Resign/Draw/Flip are rendered as
     # clickable body text above the board, so the grid stays exactly 64 uniform cells.
-    # Scaling the texture pack glyphs larger (e.g. 18px instead of 16px) reduces padding inside
-    # each button — in that case also increase this width to prevent KaMenu from scrolling the
-    # glyph when it exceeds available padding.
+    # The bundled pack uses 22px board tiles whose negative font advances keep their measured
+    # labels within this 20px button. Changing this width without regenerating the tile geometry
+    # can reintroduce grid seams or Minecraft's overflowing-label marquee.
     square-button-width: 20
 
 # Resource pack delivery.

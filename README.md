@@ -30,7 +30,7 @@ boards, or extra runtime dependencies.
 ## The board in action
 
 <p align="center">
-  <img src="https://castled.codes/assets/chess-dialog.png" alt="A timed Chess match in Minecraft's native dialog UI" width="353">
+  <img src="https://castled.codes/assets/chess-dialog2.png?v=2" alt="A timed Chess match in Minecraft's native dialog UI" width="353">
 </p>
 
 ## Requirements
