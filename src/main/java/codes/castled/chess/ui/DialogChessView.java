@@ -52,7 +52,8 @@ public final class DialogChessView implements ChessView, BoardClicks {
       DialogSettings settings,
       MoveCalculator moveCalculator,
       GameStatusEvaluator status,
-      MessageConfig messages) {
+      MessageConfig messages,
+      boolean verticalCastling) {
     this.game = game;
     this.plugin = plugin;
     PieceGlyph glyph = new PieceGlyph(settings.useGlyphs());
@@ -63,7 +64,9 @@ public final class DialogChessView implements ChessView, BoardClicks {
             .uses(ClickCallback.UNLIMITED_USES)
             .lifetime(Duration.ofMinutes(30))
             .build();
-    this.boardDialog = new PaperBoardDialog(settings, glyph, moveCalculator, status, messages, options);
+    this.boardDialog =
+        new PaperBoardDialog(
+            settings, glyph, moveCalculator, status, messages, options, verticalCastling);
     this.promotionDialog = new PaperPromotionDialog(settings, glyph, messages, options);
   }
 

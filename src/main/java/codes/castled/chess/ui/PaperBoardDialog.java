@@ -57,13 +57,18 @@ public final class PaperBoardDialog {
   private final DialogLabels labels;
   private final ClickCallback.Options clickOptions;
 
+  /** Whether the vertical castling easter egg is enabled, so its premove can be highlighted. */
+  private final boolean verticalCastling;
+
   public PaperBoardDialog(
       DialogSettings settings,
       PieceGlyph glyph,
       MoveCalculator moveCalculator,
       GameStatusEvaluator status,
       DialogLabels labels,
-      ClickCallback.Options clickOptions) {
+      ClickCallback.Options clickOptions,
+      boolean verticalCastling) {
+    this.verticalCastling = verticalCastling;
     this.settings = settings;
     this.glyph = glyph;
     this.moveCalculator = moveCalculator;
@@ -106,14 +111,15 @@ public final class PaperBoardDialog {
       Map<Square, Piece> sim = ChessGameHolder.simulatePremoves(board, premoves);
       Piece ghostPiece = sim.get(ghostSel);
       legal = ghostPiece != null
-          ? ChessGameHolder.pseudoLegalMoves(sim, ghostSel, ghostPiece.color())
+          ? ChessGameHolder.pseudoLegalMoves(
+              chessGame, verticalCastling, sim, ghostSel, ghostPiece.color())
           : List.of();
       selected = ghostSel;
     } else if (selected != null && settings.showLegalMoves() && !state.isSpectator()) {
       if (viewerOnTurn) {
         legal = moveCalculator.getPossibleMoves(chessGame, selected);
       } else {
-        legal = PremoveMoveCalculator.getPremoveMoves(chessGame, selected);
+        legal = PremoveMoveCalculator.getPremoveMoves(chessGame, selected, verticalCastling);
       }
     } else {
       legal = List.of();

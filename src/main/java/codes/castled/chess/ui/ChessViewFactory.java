@@ -15,12 +15,20 @@ public final class ChessViewFactory {
   private final MessageConfig messageConfig;
   private final MoveCalculator moveCalculator;
 
+  /** Whether the vertical castling easter egg is enabled, needed to highlight its premove. */
+  private final boolean verticalCastling;
+
   public ChessViewFactory(
-      Chess plugin, UiConfig uiConfig, MessageConfig messageConfig, MoveCalculator moveCalculator) {
+      Chess plugin,
+      UiConfig uiConfig,
+      MessageConfig messageConfig,
+      MoveCalculator moveCalculator,
+      boolean verticalCastling) {
     this.plugin = plugin;
     this.uiConfig = uiConfig;
     this.messageConfig = messageConfig;
     this.moveCalculator = moveCalculator;
+    this.verticalCastling = verticalCastling;
   }
 
   /**
@@ -32,6 +40,7 @@ public final class ChessViewFactory {
   public ChessView create(ChessGameHolder game) {
     DialogSettings settings = uiConfig.getDialogSettings();
     GameStatusEvaluator status = new GameStatusEvaluator(moveCalculator);
-    return new DialogChessView(game, plugin, settings, moveCalculator, status, messageConfig);
+    return new DialogChessView(
+        game, plugin, settings, moveCalculator, status, messageConfig, verticalCastling);
   }
 }

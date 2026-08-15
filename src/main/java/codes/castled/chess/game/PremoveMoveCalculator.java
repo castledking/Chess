@@ -10,6 +10,7 @@ import codes.castled.chess.engine.common.board.SquareUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Generates premove destinations using relaxed, geometry-only validation matching the
@@ -20,15 +21,18 @@ import java.util.List;
  *       (the opponent might move a piece there before the premove fires).
  *   <li>Does not block sliding pieces (bishop, rook, queen) on opponent pieces — only
  *       own pieces block the path, since opponent pieces may move away.
- *   <li>Does not validate check, castling, or en passant — those are enforced at play
- *       time by the engine's strict move validation.
+ *   <li>Offers castling on rights alone, without checking that the path is clear or that the
+ *       king would pass through check — the opponent's single move can change either.
+ *   <li>Does not validate check or en passant — those are enforced at play time by the
+ *       engine's strict move validation.
  * </ul>
  */
 public final class PremoveMoveCalculator {
 
   private PremoveMoveCalculator() {}
 
-  public static List<Square> getPremoveMoves(ChessGame game, Square from) {
+  public static List<Square> getPremoveMoves(
+      ChessGame game, Square from, boolean verticalCastling) {
     ChessBoard board = game.getChessBoard();
     Piece piece = board.getPiece(from);
     if (piece == null) {
@@ -43,11 +47,83 @@ public final class PremoveMoveCalculator {
       case BISHOP -> addSlidingMoves(board, from, color, moves, true, false);
       case ROOK -> addSlidingMoves(board, from, color, moves, false, true);
       case QUEEN -> addSlidingMoves(board, from, color, moves, true, true);
-      case KING -> addKingMoves(board, from, color, moves);
+      case KING -> {
+        addKingMoves(board, from, color, moves);
+        addCastlingMoves(game, verticalCastling, from, color, board::getPiece, moves);
+      }
       case PAWN -> addPawnMoves(game, from, color, moves);
     }
 
     return moves;
+  }
+
+  /**
+   * Adds the castling destinations a king may premove to.
+   *
+   * <p>Deliberately checks neither that the path is clear nor that the king would castle out of,
+   * through, or into check, because the opponent's move can change both: it can capture the piece
+   * blocking the path, or move the piece giving check. Castling <em>rights</em> are checked,
+   * because unlike those, they are monotonic — once the king or rook has moved the right is gone
+   * for good and no opponent move brings it back. Play-time validation applies the real rules.
+   *
+   * @param game the authoritative game, which owns castling rights
+   * @param verticalCastling whether the vertical castling easter egg is enabled
+   * @param kingSquare the king's square in the projected position
+   * @param color the premover's colour
+   * @param projected looks a square up in the projected position, which for a stacked premove
+   *     chain is not the authoritative board
+   * @param moves the list of premove destinations to add to
+   */
+  static void addCastlingMoves(
+      ChessGame game,
+      boolean verticalCastling,
+      Square kingSquare,
+      PieceColor color,
+      Function<Square, Piece> projected,
+      List<Square> moves) {
+
+    if (game.hasKingMoved(color)) {
+      return;
+    }
+
+    // A king that has already been premoved elsewhere cannot castle from where it now appears.
+    // Its rights say it has not moved, so the authoritative board still holds it at home; if the
+    // projected square is not that square, this is a projected king and castling does not apply.
+    Piece authoritativeKing = game.getChessBoard().getPiece(kingSquare);
+    if (authoritativeKing == null
+        || authoritativeKing.type() != PieceType.KING
+        || authoritativeKing.color() != color) {
+      return;
+    }
+
+    for (Square rookSquare : game.getUnmovedRookSquares(color)) {
+      // The rook may have been premoved away or captured earlier in the chain.
+      Piece rook = projected.apply(rookSquare);
+      if (rook == null || rook.type() != PieceType.ROOK || rook.color() != color) {
+        continue;
+      }
+
+      int rowStep = Integer.signum(rookSquare.getRowIndex() - kingSquare.getRowIndex());
+      int columnStep = Integer.signum(rookSquare.getColumnIndex() - kingSquare.getColumnIndex());
+
+      boolean alongRank = rowStep == 0 && columnStep != 0;
+      boolean alongFile = columnStep == 0 && rowStep != 0;
+
+      int forward = color == PieceColor.WHITE ? 1 : -1;
+      if (alongFile && !(verticalCastling && rowStep == forward)) {
+        continue;
+      }
+
+      if (!alongRank && !alongFile) {
+        continue;
+      }
+
+      Square destination =
+          SquareUtils.offsetOrNull(kingSquare, rowStep * 2, columnStep * 2);
+      if (destination != null) {
+        moves.add(destination);
+      }
+    }
   }
 
   /** Knight: all 8 L-shaped jumps, blocked only by own pieces. */
@@ -95,7 +171,7 @@ public final class PremoveMoveCalculator {
     }
   }
 
-  /** King: all 8 adjacent squares, blocked only by own pieces. No castling. */
+  /** King: all 8 adjacent squares, blocked only by own pieces. Castling is added separately. */
   private static void addKingMoves(
       ChessBoard board, Square from, PieceColor color, List<Square> moves) {
     int[][] offsets = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};

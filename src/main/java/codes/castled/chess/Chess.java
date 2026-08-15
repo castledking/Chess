@@ -29,7 +29,8 @@ public final class Chess extends JavaPlugin {
 
     EngineFactory engine = new EngineFactory(settings.isVerticalCastlingEnabled());
     SoundPlayer sound = new SoundPlayer(this, settings);
-    ChessViewFactory viewFactory = new ChessViewFactory(this, ui, messages, engine.moveCalculator());
+    ChessViewFactory viewFactory = new ChessViewFactory(
+            this, ui, messages, engine.moveCalculator(), settings.isVerticalCastlingEnabled());
     gameService =
         new GameService(
             this, engine.chessGameService(), engine.moveCalculator(), messages, settings, sound, viewFactory);

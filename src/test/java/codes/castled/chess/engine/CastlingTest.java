@@ -20,11 +20,15 @@ import codes.castled.chess.engine.api.piece.PieceType;
 import codes.castled.chess.engine.common.board.CastlingStatus;
 import codes.castled.chess.engine.common.board.ChessBoardImpl;
 import codes.castled.chess.engine.common.game.ChessGameImpl;
+import codes.castled.chess.engine.api.move.Move;
+import codes.castled.chess.game.ChessGameHolder;
+import codes.castled.chess.game.PremoveMoveCalculator;
 import codes.castled.chess.wiring.EngineFactory;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -273,6 +277,131 @@ class CastlingTest {
     assertFalse(fixture.movesFrom(new Square('8', 'E')).contains(new Square('6', 'E')));
   }
 
+
+  /* Premovability -------------------------------------------------------- */
+
+  @Test
+  void castlingIsOfferedAsAPremove() {
+    Fixture fixture = emptyBoard(false);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(H1, PieceColor.WHITE);
+    fixture.placeUnmovedRook(A1, PieceColor.WHITE);
+    fixture.place(E8, PieceType.KING, PieceColor.BLACK);
+
+    List<Square> premoves = fixture.premovesFrom(E1, false);
+
+    assertTrue(premoves.contains(new Square('1', 'G')), "king side castling must be premovable");
+    assertTrue(premoves.contains(new Square('1', 'C')), "queen side castling must be premovable");
+  }
+
+  @Test
+  void castlingIsPremovableThroughABlockedPathTheOpponentCouldClear() {
+    Fixture fixture = emptyBoard(false);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(H1, PieceColor.WHITE);
+    fixture.place(new Square('1', 'F'), PieceType.BISHOP, PieceColor.WHITE);
+    fixture.place(E8, PieceType.KING, PieceColor.BLACK);
+
+    // Queue time is a plausibility test: the opponent's single move could capture the bishop.
+    assertTrue(fixture.premovesFrom(E1, false).contains(new Square('1', 'G')));
+    // Play time is not: with the bishop still there the move is rejected outright.
+    assertFalse(fixture.movesFrom(E1).contains(new Square('1', 'G')));
+  }
+
+  @Test
+  void castlingIsNotPremovableOnceTheRightIsGone() {
+    Fixture fixture = emptyBoard(false);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(H1, PieceColor.WHITE);
+    fixture.place(E8, PieceType.KING, PieceColor.BLACK);
+
+    fixture.move(WHITE, H1, new Square('2', 'H'));
+    fixture.move(BLACK, E8, new Square('7', 'E'));
+    fixture.move(WHITE, new Square('2', 'H'), H1);
+
+    // Rights are monotonic, so no opponent move can bring this one back.
+    assertFalse(fixture.premovesFrom(E1, false).contains(new Square('1', 'G')));
+  }
+
+  @Test
+  void castlingIsNotPremovableOnceTheKingHasMoved() {
+    Fixture fixture = emptyBoard(false);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(H1, PieceColor.WHITE);
+    fixture.place(E8, PieceType.KING, PieceColor.BLACK);
+
+    // King out and straight back: the rook is untouched but the king's right is gone.
+    fixture.move(WHITE, E1, new Square('1', 'D'));
+    fixture.move(BLACK, E8, new Square('7', 'E'));
+    fixture.move(WHITE, new Square('1', 'D'), E1);
+
+    assertFalse(fixture.premovesFrom(E1, false).contains(new Square('1', 'G')));
+  }
+
+  @Test
+  void verticalCastlingIsPremovableOnlyWhenTheEasterEggIsEnabled() {
+    Fixture off = emptyBoard(false);
+    off.place(E1, PieceType.KING, PieceColor.WHITE);
+    off.placeUnmovedRook(E8, PieceColor.WHITE);
+    off.place(new Square('8', 'A'), PieceType.KING, PieceColor.BLACK);
+    assertFalse(off.premovesFrom(E1, false).contains(E3));
+
+    Fixture on = emptyBoard(true);
+    on.place(E1, PieceType.KING, PieceColor.WHITE);
+    on.placeUnmovedRook(E8, PieceColor.WHITE);
+    on.place(new Square('8', 'A'), PieceType.KING, PieceColor.BLACK);
+    assertTrue(on.premovesFrom(E1, true).contains(E3));
+  }
+
+  @Test
+  void verticalCastlingIsPremovableWithTheFileStillBlocked() {
+    Fixture fixture = emptyBoard(true);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(E8, PieceColor.WHITE);
+    fixture.place(new Square('5', 'E'), PieceType.BISHOP, PieceColor.BLACK);
+    fixture.place(new Square('8', 'A'), PieceType.KING, PieceColor.BLACK);
+
+    assertTrue(fixture.premovesFrom(E1, true).contains(E3));
+    assertFalse(fixture.movesFrom(E1).contains(E3));
+  }
+
+  @Test
+  void castlingIsNotPremovableFromAProjectedKingSquare() {
+    Fixture fixture = emptyBoard(false);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(H1, PieceColor.WHITE);
+    fixture.place(E8, PieceType.KING, PieceColor.BLACK);
+
+    // The player has already queued Ke1-d1; from d1 the king may not then castle, even though
+    // its rights on the authoritative board still say it has not moved.
+    Map<Square, Piece> projected =
+        ChessGameHolder.simulatePremoves(
+            fixture.board, List.of(new Move(null, E1, new Square('1', 'D'))));
+    List<Square> fromProjected =
+        ChessGameHolder.pseudoLegalMoves(
+            fixture.game, false, projected, new Square('1', 'D'), PieceColor.WHITE);
+
+    assertFalse(fromProjected.contains(new Square('1', 'B')));
+    assertFalse(fromProjected.contains(new Square('1', 'F')));
+  }
+
+  @Test
+  void castlingStopsBeingPremovableOnceTheRookIsPremovedAway() {
+    Fixture fixture = emptyBoard(false);
+    fixture.place(E1, PieceType.KING, PieceColor.WHITE);
+    fixture.placeUnmovedRook(H1, PieceColor.WHITE);
+    fixture.place(E8, PieceType.KING, PieceColor.BLACK);
+
+    // Queue Rh1-h5 first; the projected position no longer has a rook to castle with.
+    Map<Square, Piece> projected =
+        ChessGameHolder.simulatePremoves(
+            fixture.board, List.of(new Move(null, H1, new Square('5', 'H'))));
+
+    assertFalse(
+        ChessGameHolder.pseudoLegalMoves(fixture.game, false, projected, E1, PieceColor.WHITE)
+            .contains(new Square('1', 'G')));
+  }
+
   /* Fixture ------------------------------------------------------------- */
 
   private Fixture verticalFixture() {
@@ -343,6 +472,10 @@ class CastlingTest {
 
     private List<Square> movesFrom(Square square) {
       return calculator.getPossibleMoves(game, square);
+    }
+
+    private List<Square> premovesFrom(Square square, boolean verticalCastling) {
+      return PremoveMoveCalculator.getPremoveMoves(game, square, verticalCastling);
     }
 
     private Piece pieceAt(Square square) {

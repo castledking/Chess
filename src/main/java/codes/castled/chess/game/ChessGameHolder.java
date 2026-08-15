@@ -223,7 +223,9 @@ public final class ChessGameHolder {
    */
   private boolean queuePremove(UUID playerId, Square from, Square to) {
     if (!hasQueuedPremoves(playerId)) {
-      List<Square> possible = PremoveMoveCalculator.getPremoveMoves(chessGame, from);
+      List<Square> possible =
+          PremoveMoveCalculator.getPremoveMoves(
+              chessGame, from, settingsConfig.isVerticalCastlingEnabled());
       if (possible.isEmpty() || !possible.contains(to)) {
         return false;
       }
@@ -431,9 +433,16 @@ public final class ChessGameHolder {
   /**
    * Computes pseudo-legal destination squares for a piece at {@code from} based on the
    * simulated board after the premove chain. Own pieces block; opponent pieces are
-   * capturable; no check/castling/en-passant validation.
+   * capturable; no check or en-passant validation. Castling is offered on rights alone,
+   * looked up against the simulated position so a rook already premoved away stops offering
+   * it.
    */
-  public static List<Square> pseudoLegalMoves(Map<Square, Piece> sim, Square from, PieceColor color) {
+  public static List<Square> pseudoLegalMoves(
+      ChessGame game,
+      boolean verticalCastling,
+      Map<Square, Piece> sim,
+      Square from,
+      PieceColor color) {
     Piece piece = sim.get(from);
     if (piece == null) {
       return List.of();
@@ -462,6 +471,8 @@ public final class ChessGameHolder {
             if (occ == null || occ.color() != color) moves.add(d);
           }
         }
+        PremoveMoveCalculator.addCastlingMoves(
+            game, verticalCastling, from, color, sim::get, moves);
       }
       case PAWN -> {
         int dir = color == PieceColor.WHITE ? 1 : -1;

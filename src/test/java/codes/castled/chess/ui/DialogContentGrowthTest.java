@@ -59,7 +59,13 @@ class DialogContentGrowthTest {
   private final DialogSettings settings = defaultSettings();
   private final PaperBoardDialog board =
       new PaperBoardDialog(
-          settings, new PieceGlyph(false), engine.moveCalculator(), status, fakeLabels(), clickOptions());
+          settings,
+          new PieceGlyph(false),
+          engine.moveCalculator(),
+          status,
+          fakeLabels(),
+          clickOptions(),
+          false);
   private final PaperPromotionDialog promotion =
       new PaperPromotionDialog(settings, new PieceGlyph(false), fakeLabels(), clickOptions());
 
