@@ -54,7 +54,7 @@ class DialogContentGrowthTest {
 
   private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
-  private final EngineFactory engine = new EngineFactory();
+  private final EngineFactory engine = new EngineFactory(false);
   private final GameStatusEvaluator status = new GameStatusEvaluator(engine.moveCalculator());
   private final DialogSettings settings = defaultSettings();
   private final PaperBoardDialog board =

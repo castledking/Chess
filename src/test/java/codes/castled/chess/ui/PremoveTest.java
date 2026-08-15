@@ -70,7 +70,7 @@ class PremoveTest {
 
   @Test
   void queuedPremoveIsPlayedOnceItsPlayersTurnArrives() {
-    EngineFactory engine = new EngineFactory();
+    EngineFactory engine = new EngineFactory(false);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
 
@@ -100,7 +100,7 @@ class PremoveTest {
 
   @Test
   void capturePremovePlaysOnceTheTurnArrives() {
-    EngineFactory engine = new EngineFactory();
+    EngineFactory engine = new EngineFactory(false);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
 
@@ -126,7 +126,7 @@ class PremoveTest {
 
   @Test
   void premoveThatBecomesIllegalIsDiscarded() {
-    EngineFactory engine = new EngineFactory();
+    EngineFactory engine = new EngineFactory(false);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
 
@@ -159,7 +159,7 @@ class PremoveTest {
 
   @Test
   void eightPawnPremoveStormFillsTheFourthAndFifthRanks() {
-    EngineFactory engine = new EngineFactory();
+    EngineFactory engine = new EngineFactory(false);
     ChessGame game = newGame(engine);
     ChessBoard board = game.getChessBoard();
 
@@ -197,7 +197,7 @@ class PremoveTest {
 
   @Test
   void scholarsMateByPremove() {
-    EngineFactory engine = new EngineFactory();
+    EngineFactory engine = new EngineFactory(false);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
     ChessBoard board = game.getChessBoard();
@@ -244,7 +244,7 @@ class PremoveTest {
 
   @Test
   void premoveStackDiscardsEverythingWhenTheHeadBecomesIllegal() {
-    EngineFactory engine = new EngineFactory();
+    EngineFactory engine = new EngineFactory(false);
     ChessGame game = newGame(engine);
     ChessBoard board = game.getChessBoard();
 

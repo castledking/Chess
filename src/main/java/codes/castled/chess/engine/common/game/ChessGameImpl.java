@@ -5,10 +5,10 @@ import codes.castled.chess.engine.api.game.ChessGame;
 import codes.castled.chess.engine.api.game.TimeMode;
 import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.api.piece.PieceType;
 import codes.castled.chess.engine.api.move.Move;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.move.MoveResult;
-import codes.castled.chess.engine.api.move.MoveResultType;
 import codes.castled.chess.engine.common.board.CastlingStatus;
 import codes.castled.chess.engine.common.board.ChessBoardImpl;
 import codes.castled.chess.engine.common.move.MoveValidator;
@@ -56,6 +56,14 @@ public final class ChessGameImpl implements ChessGame {
 
     specialMoveHandler = new SpecialMoveHandler(this, chessBoard, moveValidator);
 
+    // Seed castling eligibility from wherever the rooks actually start, so an alternative
+    // starting arrangement needs no changes here.
+    for (PieceColor color : PieceColor.values()) {
+      chessBoard
+          .getColoredPieces(color, PieceType.ROOK)
+          .forEach(square -> castlingStatus.markRookUnmoved(color, square));
+    }
+
     whiteTimeLeftMillis = timeMode.getStartTimeMillis();
     blackTimeLeftMillis = timeMode.getStartTimeMillis();
     incrementMillis = timeMode.getIncrementMillis();
@@ -71,7 +79,7 @@ public final class ChessGameImpl implements ChessGame {
     List<Square> possibleMoves = new ArrayList<>(moveCalculator.getPossibleMoves(this, fromSquare));
 
     if (!possibleMoves.contains(toSquare))
-      return new MoveResult(MoveResultType.ILLEGAL, false, false, false, false);
+      return MoveResult.illegal();
 
     Move playedMove = new Move(selectedPiece, fromSquare, toSquare);
     Piece capturedPiece = chessBoard.movePiece(playedMove);
@@ -124,7 +132,7 @@ public final class ChessGameImpl implements ChessGame {
 
     return result != null
         ? result
-        : new MoveResult(MoveResultType.SUCCESS, false, false, false, false);
+        : MoveResult.success();
   }
 
   /**
@@ -218,13 +226,27 @@ public final class ChessGameImpl implements ChessGame {
   }
 
   @Override
-  public boolean hasKingSideRookMoved(PieceColor color) {
-    return castlingStatus.hasKingSideRookMoved(color);
+  public Set<Square> getUnmovedRookSquares(PieceColor color) {
+    return castlingStatus.getUnmovedRookSquares(color);
   }
 
   @Override
-  public boolean hasQueenSideRookMoved(PieceColor color) {
-    return castlingStatus.hasQueenSideRookMoved(color);
+  public void applyPromotion(Square from, Square to, PieceType type) {
+    Piece pawn = chessBoard.getPiece(from);
+    if (pawn == null) {
+      return;
+    }
+
+    Piece promoted = new Piece(type, pawn.color());
+    chessBoard.setPiece(from, null);
+    chessBoard.setPiece(to, promoted);
+    chessBoard.setLastPlayedMove(new Move(promoted, from, to));
+
+    // A promoted rook has never moved, so it can castle — which is only reachable on the
+    // king's file, and therefore only matters when vertical castling is enabled.
+    if (type == PieceType.ROOK) {
+      castlingStatus.markRookUnmoved(pawn.color(), to);
+    }
   }
 
   /**

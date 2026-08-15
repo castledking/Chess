@@ -79,6 +79,15 @@ There are no permission nodes in version 1.0.0; every player can use `/chess`.
 The board can follow each player's color, show or hide coordinates, legal moves, last moves,
 captured pieces, and clocks, and use textured glyphs or standard Unicode pieces.
 
+### Easter eggs
+
+Set `easter-egg.enable-vertical-castling: true` in `settings.yml` to allow vertical castling (the
+Pam-Krabbé castling). Promote a pawn to a rook on your king's own file and the king may castle with
+it straight up the board — it moves two squares towards the rook and the rook lands on the square
+the king crossed, so white `Ke1` with a promoted rook on `e8` becomes `Ke3`, `Re2`. Every normal
+castling restriction still applies: the king must not have moved, the file between them must be
+empty, and the king may not castle out of, through, or into check. Off by default.
+
 ## Building
 
 Chess uses Java 21 and Gradle. Its bundled rules engine comes from the

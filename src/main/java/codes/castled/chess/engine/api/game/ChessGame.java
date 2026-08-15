@@ -5,8 +5,10 @@ import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.move.MoveResult;
 import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.api.piece.PieceType;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -122,14 +124,23 @@ public interface ChessGame {
   boolean hasKingMoved(PieceColor color);
 
   /**
-   * @param color the color of the rook
-   * @return whether the king side rook with the given color has already moved once
+   * Gets the squares of the rooks that are still eligible to castle, which includes rooks that
+   * appeared through promotion.
+   *
+   * @param color the color of the rooks
+   * @return the squares of that color's rooks that have never moved
    */
-  boolean hasKingSideRookMoved(PieceColor color);
+  Set<Square> getUnmovedRookSquares(PieceColor color);
 
   /**
-   * @param color the color of the rook
-   * @return whether the queen side rook with the given color has already moved once
+   * Replaces a pawn that reached the promotion row with the chosen piece.
+   *
+   * <p>This belongs to the game rather than the caller because promoting to a rook creates a
+   * rook that has never moved, and only the game tracks castling eligibility.
+   *
+   * @param from the square the pawn was promoted from
+   * @param to the promotion square the new piece is placed on
+   * @param type the chosen piece type
    */
-  boolean hasQueenSideRookMoved(PieceColor color);
+  void applyPromotion(Square from, Square to, PieceType type);
 }

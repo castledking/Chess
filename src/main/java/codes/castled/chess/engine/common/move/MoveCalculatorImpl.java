@@ -12,6 +12,7 @@ import codes.castled.chess.engine.common.board.SquareUtils;
 import codes.castled.chess.engine.common.board.ChessBoardImpl;
 import codes.castled.chess.engine.common.move.calculator.*;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,9 @@ public final class MoveCalculatorImpl implements MoveCalculator {
   private final QueenMoveCalculator queenMoveCalculator;
   private final KingMoveCalculator kingMoveCalculator;
 
+  /** Whether the vertical castling easter egg is enabled. */
+  private final boolean verticalCastling;
+
   public MoveCalculatorImpl(
       MoveValidator moveValidator,
       PawnMoveCalculator pawnMoveCalculator,
@@ -34,7 +38,9 @@ public final class MoveCalculatorImpl implements MoveCalculator {
       BishopMoveCalculator bishopMoveCalculator,
       KnightMoveCalculator knightMoveCalculator,
       QueenMoveCalculator queenMoveCalculator,
-      KingMoveCalculator kingMoveCalculator) {
+      KingMoveCalculator kingMoveCalculator,
+      boolean verticalCastling) {
+    this.verticalCastling = verticalCastling;
     this.moveValidator = moveValidator;
     this.pawnMoveCalculator = pawnMoveCalculator;
     this.rookMoveCalculator = rookMoveCalculator;
@@ -65,7 +71,7 @@ public final class MoveCalculatorImpl implements MoveCalculator {
                 .toList());
 
     if (piece.type() == PieceType.KING) {
-      addCastlingMoves(chessGame, possibleMoves, piece.color());
+      addCastlingMoves(chessGame, possibleMoves, pieceSquare, piece.color());
     }
 
     return possibleMoves;
@@ -109,80 +115,120 @@ public final class MoveCalculatorImpl implements MoveCalculator {
    * Checks whether castling moves can be played and adds them to the given list of available moves
    * if so.
    *
+   * <p>Each rook that has never moved is considered in turn rather than assuming one rook per
+   * side on a fixed file, so a rook on any file works — including one that appeared through
+   * promotion, which is what makes vertical castling reachable.
+   *
    * @param chessGame the played game
    * @param squares the list of possible moves
+   * @param kingSquare the square the king stands on
    * @param color the color of the pieces to check castling
    */
-  private void addCastlingMoves(ChessGame chessGame, List<Square> squares, PieceColor color) {
-    ChessBoard chessBoard = chessGame.getChessBoard();
-    if (!chessGame.hasKingMoved(color)) {
-      char row = color == PieceColor.WHITE ? '1' : '8';
-
-      List<Square> allRawMoves = getAllRawMoves(chessBoard, PieceColor.getOtherColor(color));
-
-      addKingSideCastleSquare(chessGame, squares, allRawMoves, color, row);
-
-      addQueenSideCastleSquare(chessGame, squares, allRawMoves, color, row);
+  private void addCastlingMoves(
+      ChessGame chessGame, List<Square> squares, Square kingSquare, PieceColor color) {
+    if (chessGame.hasKingMoved(color)) {
+      return;
     }
-  }
 
-  /**
-   * @param chessGame the played game
-   * @param squares the list of possible moves
-   * @param allRawMoves the list of all raw moves from the other color pieces
-   * @param kingColor the color of the king
-   * @param row the row of the castling line
-   */
-  private void addKingSideCastleSquare(
-      ChessGame chessGame,
-      List<Square> squares,
-      List<Square> allRawMoves,
-      PieceColor kingColor,
-      char row) {
     ChessBoard chessBoard = chessGame.getChessBoard();
-    if (!chessGame.hasKingSideRookMoved(kingColor)
-        && !chessBoard.isOccupied(new Square(row, 'F'))
-        && !chessBoard.isOccupied(new Square(row, 'G'))) {
+    List<Square> allRawMoves = getAllRawMoves(chessBoard, PieceColor.getOtherColor(color));
 
-      boolean kingSideAttacked =
-          isAttacked(chessBoard, allRawMoves, new Square(row, 'E'), kingColor)
-              || isAttacked(chessBoard, allRawMoves, new Square(row, 'F'), kingColor)
-              || isAttacked(chessBoard, allRawMoves, new Square(row, 'G'), kingColor);
+    for (Square rookSquare : chessGame.getUnmovedRookSquares(color)) {
+      Square destination =
+          castleDestination(chessBoard, allRawMoves, kingSquare, rookSquare, color);
 
-      if (!kingSideAttacked) {
-        squares.add(new Square(row, 'G'));
+      if (destination != null) {
+        squares.add(destination);
       }
     }
   }
 
   /**
-   * @param chessGame the played game
-   * @param squares the list of possible moves
+   * Works out where the king would land castling with the rook on the given square, if that
+   * castling is legal at all.
+   *
+   * @param chessBoard the associated chess board
    * @param allRawMoves the list of all raw moves from the other color pieces
-   * @param kingColor the color of the king
-   * @param row the row of the castling line
+   * @param kingSquare the square the king stands on
+   * @param rookSquare the square of the rook to castle with
+   * @param color the color of the castling side
+   * @return the king's destination square, or null if this castling is not available
    */
-  private void addQueenSideCastleSquare(
-      ChessGame chessGame,
-      List<Square> squares,
+  @Nullable
+  private Square castleDestination(
+      ChessBoard chessBoard,
       List<Square> allRawMoves,
-      PieceColor kingColor,
-      char row) {
-    ChessBoard chessBoard = chessGame.getChessBoard();
-    if (!chessGame.hasQueenSideRookMoved(kingColor)
-        && !chessBoard.isOccupied(new Square(row, 'D'))
-        && !chessBoard.isOccupied(new Square(row, 'C'))
-        && !chessBoard.isOccupied(new Square(row, 'B'))) {
+      Square kingSquare,
+      Square rookSquare,
+      PieceColor color) {
 
-      boolean queenSideAttacked =
-          isAttacked(chessBoard, allRawMoves, new Square(row, 'E'), kingColor)
-              || isAttacked(chessBoard, allRawMoves, new Square(row, 'D'), kingColor)
-              || isAttacked(chessBoard, allRawMoves, new Square(row, 'C'), kingColor);
-
-      if (!queenSideAttacked) {
-        squares.add(new Square(row, 'C'));
-      }
+    Piece rook = chessBoard.getPiece(rookSquare);
+    if (rook == null || rook.type() != PieceType.ROOK || rook.color() != color) {
+      return null;
     }
+
+    int rowStep = Integer.signum(rookSquare.getRowIndex() - kingSquare.getRowIndex());
+    int columnStep = Integer.signum(rookSquare.getColumnIndex() - kingSquare.getColumnIndex());
+
+    // The rook must share the king's rank (standard castling) or, when the easter egg is on,
+    // its file. A rook that shares neither is not reachable in a straight line.
+    boolean alongRank = rowStep == 0 && columnStep != 0;
+    boolean alongFile = columnStep == 0 && rowStep != 0;
+
+    if (alongFile && !(verticalCastling && rowStep == forwardDirection(color))) {
+      return null;
+    }
+
+    if (!alongRank && !alongFile) {
+      return null;
+    }
+
+    if (!isPathClear(chessBoard, kingSquare, rookSquare, rowStep, columnStep)) {
+      return null;
+    }
+
+    Square crossed = SquareUtils.offsetOrNull(kingSquare, rowStep, columnStep);
+    Square destination = SquareUtils.offsetOrNull(kingSquare, rowStep * 2, columnStep * 2);
+
+    if (crossed == null || destination == null) {
+      return null;
+    }
+
+    // The king may not castle out of, through, or into check.
+    if (isAttacked(chessBoard, allRawMoves, kingSquare, color)
+        || isAttacked(chessBoard, allRawMoves, crossed, color)
+        || isAttacked(chessBoard, allRawMoves, destination, color)) {
+      return null;
+    }
+
+    return destination;
+  }
+
+  /**
+   * @param color the color of the castling side
+   * @return the row direction that color's pawns advance in, which is the only direction it may
+   *     castle vertically — a promoted rook can only ever stand at the far end of that file
+   */
+  private int forwardDirection(PieceColor color) {
+    return color == PieceColor.WHITE ? 1 : -1;
+  }
+
+  /**
+   * @return whether every square strictly between the king and the rook is empty
+   */
+  private boolean isPathClear(
+      ChessBoard chessBoard, Square kingSquare, Square rookSquare, int rowStep, int columnStep) {
+    Square square = SquareUtils.offsetOrNull(kingSquare, rowStep, columnStep);
+
+    while (square != null && !square.equals(rookSquare)) {
+      if (chessBoard.isOccupied(square)) {
+        return false;
+      }
+
+      square = SquareUtils.offsetOrNull(square, rowStep, columnStep);
+    }
+
+    return square != null;
   }
 
   /** Returns whether the given square is currently being attacked by the other color. */

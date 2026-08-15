@@ -1,23 +1,30 @@
 package codes.castled.chess.engine.common.board;
 
+import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.piece.PieceColor;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Represents the castling status.
+ * Tracks which pieces are still eligible to castle.
+ *
+ * <p>Rooks are tracked as a set of squares rather than king-side/queen-side flags. A rook is
+ * eligible while its square is in the set; moving or losing it removes the square. This models
+ * three things the flag pair could not: rooks that start on arbitrary files (Chess960), rooks
+ * that appear mid-game through promotion, and the fact that eligibility belongs to a specific
+ * rook rather than to a side of the board.
  */
 public final class CastlingStatus {
 
   private final Map<PieceColor, Boolean> kingMoved =
       new HashMap<>(Map.of(PieceColor.WHITE, false, PieceColor.BLACK, false));
 
-  private final Map<PieceColor, Boolean> kingSideRookMoved =
-      new HashMap<>(Map.of(PieceColor.WHITE, false, PieceColor.BLACK, false));
-
-  private final Map<PieceColor, Boolean> queenSideRookMoved =
-      new HashMap<>(Map.of(PieceColor.WHITE, false, PieceColor.BLACK, false));
+  private final Map<PieceColor, Set<Square>> unmovedRooks =
+      new HashMap<>(
+          Map.of(PieceColor.WHITE, new HashSet<>(), PieceColor.BLACK, new HashSet<>()));
 
   public void markKingMoved(PieceColor color) {
     kingMoved.put(color, true);
@@ -27,19 +34,32 @@ public final class CastlingStatus {
     return kingMoved.get(color);
   }
 
-  public void markKingSideRookMoved(PieceColor color) {
-    kingSideRookMoved.put(color, true);
+  /**
+   * Records a rook that has never moved, either at board setup or when one appears through
+   * promotion.
+   *
+   * @param color the colour of the rook
+   * @param square the square the rook stands on
+   */
+  public void markRookUnmoved(PieceColor color, Square square) {
+    unmovedRooks.get(color).add(square);
   }
 
-  public boolean hasKingSideRookMoved(PieceColor color) {
-    return kingSideRookMoved.get(color);
+  /**
+   * Withdraws a rook's castling eligibility, because it moved or was captured.
+   *
+   * @param color the colour of the rook
+   * @param square the square the rook stood on
+   */
+  public void markRookMoved(PieceColor color, Square square) {
+    unmovedRooks.get(color).remove(square);
   }
 
-  public void markQueenSideRookMoved(PieceColor color) {
-    queenSideRookMoved.put(color, true);
-  }
-
-  public boolean hasQueenSideRookMoved(PieceColor color) {
-    return queenSideRookMoved.get(color);
+  /**
+   * @param color the colour of the rooks
+   * @return the squares of that colour's rooks that have never moved
+   */
+  public Set<Square> getUnmovedRookSquares(PieceColor color) {
+    return Set.copyOf(unmovedRooks.get(color));
   }
 }

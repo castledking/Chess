@@ -3,7 +3,6 @@ package codes.castled.chess.engine.common.move;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.move.Move;
 import codes.castled.chess.engine.api.move.MoveResult;
-import codes.castled.chess.engine.api.move.MoveResultType;
 import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.api.piece.PieceType;
@@ -43,13 +42,21 @@ public final class SpecialMoveHandler {
       chessBoard.setPiece(
           SquareUtils.offsetOrNull(toSquare, selectedPiece.color() == PieceColor.WHITE ? -1 : 1, 0),
           null);
-      return new MoveResult(MoveResultType.SUCCESS, false, true, false, false);
+      return MoveResult.enPassantCapture();
     }
     return null;
   }
 
   /**
-   * Checks whether the given move is a castling move and returns a suitable move result.
+   * Checks whether the given move is a castling move, moves the rook if it is, and returns a
+   * suitable move result.
+   *
+   * <p>A king only ever travels two squares by castling, so a two-square king move along a rank
+   * (standard castling) or a file (vertical castling) identifies one. The rook always lands on
+   * the square the king crossed, and is always the first piece beyond the king's destination in
+   * the direction of travel — the move generator only offers the move when that path is clear.
+   * Deriving both from the geometry keeps this correct for any rook file, which fixed king-side
+   * and queen-side squares would not.
    *
    * @param fromSquare the start square
    * @param toSquare the destination square
@@ -58,27 +65,62 @@ public final class SpecialMoveHandler {
    */
   @Nullable
   public MoveResult handleCastlingMove(Square fromSquare, Square toSquare, Piece selectedPiece) {
-    if (selectedPiece.type() == PieceType.KING
-        && Math.abs(fromSquare.getColumnIndex() - toSquare.getColumnIndex()) == 2) {
-
-      Square rookFrom;
-      Square rookTo;
-
-      if (toSquare.getColumnIndex() == 6) { // King side castling
-        rookFrom = new Square(toSquare.row(), 'H');
-        rookTo = new Square(toSquare.row(), 'F');
-      } else { // Queen side castling
-        rookFrom = new Square(toSquare.row(), 'A');
-        rookTo = new Square(toSquare.row(), 'D');
-      }
-
-      Piece rook = chessBoard.getPiece(rookFrom);
-      if (rook != null) {
-        chessBoard.movePiece(new Move(rook, rookFrom, rookTo));
-      }
-
-      return new MoveResult(MoveResultType.SUCCESS, true, false, false, false);
+    if (selectedPiece.type() != PieceType.KING) {
+      return null;
     }
+
+    int rowDelta = toSquare.getRowIndex() - fromSquare.getRowIndex();
+    int columnDelta = toSquare.getColumnIndex() - fromSquare.getColumnIndex();
+
+    boolean alongRank = rowDelta == 0 && Math.abs(columnDelta) == 2;
+    boolean alongFile = columnDelta == 0 && Math.abs(rowDelta) == 2;
+
+    if (!alongRank && !alongFile) {
+      return null;
+    }
+
+    int rowStep = Integer.signum(rowDelta);
+    int columnStep = Integer.signum(columnDelta);
+
+    Square rookFrom = findRookBeyond(toSquare, rowStep, columnStep, selectedPiece.color());
+    if (rookFrom == null) {
+      return null;
+    }
+
+    Square rookTo = SquareUtils.offsetOrNull(fromSquare, rowStep, columnStep);
+    Piece rook = chessBoard.getPiece(rookFrom);
+    Move rookMove = new Move(rook, rookFrom, rookTo);
+
+    chessBoard.movePiece(rookMove);
+    chessGame.getCastlingStatus().markRookMoved(selectedPiece.color(), rookFrom);
+
+    return MoveResult.castlingWith(rookMove);
+  }
+
+  /**
+   * Finds the castling rook by scanning outwards from the king's destination, which is where the
+   * king now stands.
+   *
+   * @param fromSquare the square to start scanning beyond
+   * @param rowStep the vertical direction of travel
+   * @param columnStep the horizontal direction of travel
+   * @param color the colour of the castling side
+   * @return the rook's square, or null if the first piece found is not that side's rook
+   */
+  @Nullable
+  private Square findRookBeyond(Square fromSquare, int rowStep, int columnStep, PieceColor color) {
+    Square square = SquareUtils.offsetOrNull(fromSquare, rowStep, columnStep);
+
+    while (square != null) {
+      Piece piece = chessBoard.getPiece(square);
+
+      if (piece != null) {
+        return piece.type() == PieceType.ROOK && piece.color() == color ? square : null;
+      }
+
+      square = SquareUtils.offsetOrNull(square, rowStep, columnStep);
+    }
+
     return null;
   }
 
@@ -98,7 +140,7 @@ public final class SpecialMoveHandler {
         && (toSquare.getRowIndex() == 7 || toSquare.getRowIndex() == 0)) {
       chessBoard.setPiece(toSquare, capturedPiece);
       chessBoard.setPiece(fromSquare, selectedPiece);
-      return new MoveResult(MoveResultType.SUCCESS, false, false, true, false);
+      return MoveResult.pendingPromotion();
     }
     return null;
   }
@@ -119,38 +161,14 @@ public final class SpecialMoveHandler {
       @Nullable Piece capturedPiece,
       PieceColor currentTurn) {
 
-    handleRookMove(selectedPiece, fromSquare, currentTurn);
-    handleRookCapture(capturedPiece, toSquare);
-  }
-
-  /**
-   * Updates the castling status if a rook was moved.
-   *
-   * @param selectedPiece the selected chess piece
-   * @param fromSquare the start square
-   * @param currentTurn the color of the player who made the move
-   */
-  private void handleRookMove(Piece selectedPiece, Square fromSquare, PieceColor currentTurn) {
     if (selectedPiece.type() == PieceType.KING) {
       chessGame.getCastlingStatus().markKingMoved(currentTurn);
-    } else if (moveValidator.isQueenSideRookMove(selectedPiece, currentTurn, fromSquare)) {
-      chessGame.getCastlingStatus().markQueenSideRookMoved(currentTurn);
-    } else if (moveValidator.isKingSideRookMove(selectedPiece, currentTurn, fromSquare)) {
-      chessGame.getCastlingStatus().markKingSideRookMoved(currentTurn);
+    } else if (selectedPiece.type() == PieceType.ROOK) {
+      chessGame.getCastlingStatus().markRookMoved(currentTurn, fromSquare);
     }
-  }
 
-  /**
-   * Updates the castling status if a rook was captured.
-   *
-   * @param capturedPiece the captured piece
-   * @param toSquare the destination square
-   */
-  private void handleRookCapture(@Nullable Piece capturedPiece, Square toSquare) {
-    if (moveValidator.isQueenSideRookCapture(capturedPiece, toSquare)) {
-      chessGame.getCastlingStatus().markQueenSideRookMoved(capturedPiece.color());
-    } else if (moveValidator.isKingSideRookCapture(capturedPiece, toSquare)) {
-      chessGame.getCastlingStatus().markKingSideRookMoved(capturedPiece.color());
+    if (capturedPiece != null && capturedPiece.type() == PieceType.ROOK) {
+      chessGame.getCastlingStatus().markRookMoved(capturedPiece.color(), toSquare);
     }
   }
 }

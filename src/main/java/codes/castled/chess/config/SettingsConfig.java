@@ -47,6 +47,14 @@ public final class SettingsConfig extends Config {
     return config.getInt("duel-request.duel-request-expires-in-seconds") * 1000L;
   }
 
+  /**
+   * @return whether a king may castle vertically with an unmoved rook on its own file, which in
+   *     practice means a rook created by promoting a pawn on the king's file
+   */
+  public boolean isVerticalCastlingEnabled() {
+    return config.getBoolean("easter-egg.enable-vertical-castling", false);
+  }
+
   /** @return whether the plugin should manage (send/merge) its resource pack at all */
   public boolean getUseResourcePack() {
     return config.getBoolean("resource-pack.use-resourcepack", true);

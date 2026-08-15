@@ -10,7 +10,6 @@ import codes.castled.chess.engine.api.move.MoveResult;
 import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.api.piece.PieceType;
-import codes.castled.chess.engine.common.board.ChessBoardImpl;
 import codes.castled.chess.engine.common.board.SquareUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -64,25 +63,16 @@ public final class MoveHandler {
       return false;
     } else {
       view.applyMove(move);
-      handleCastling(moveResult, move.to());
+      handleCastling(moveResult);
       handleEnPassant(moveResult, move.to(), playerId);
       finishMove(move.to());
       return true;
     }
   }
 
-  private void handleCastling(MoveResult moveResult, Square destination) {
+  private void handleCastling(MoveResult moveResult) {
     if (moveResult.castling()) {
-      Square rookFrom;
-      Square rookTo;
-      if (destination.getColumnIndex() == 6) { // King side castling
-        rookFrom = new Square(destination.row(), 'H');
-        rookTo = new Square(destination.row(), 'F');
-      } else { // Queen side castling
-        rookFrom = new Square(destination.row(), 'A');
-        rookTo = new Square(destination.row(), 'D');
-      }
-      view.applyMove(new Move(null, rookFrom, rookTo));
+      view.applyMove(moveResult.rookMove());
     }
   }
 
@@ -119,16 +109,14 @@ public final class MoveHandler {
     Square toSquare = pending.to();
     Piece promotionPiece = new Piece(type, color);
 
-    ChessBoardImpl board = (ChessBoardImpl) chessGame.getChessBoard();
-    board.setPiece(fromSquare, null);
-    board.setPiece(toSquare, promotionPiece);
+    // The engine owns the board mutation: promoting to a rook produces a rook that has never
+    // moved, and castling eligibility is the engine's to track.
+    chessGame.applyPromotion(fromSquare, toSquare, type);
 
     UUID promotingPlayerId =
         color == PieceColor.WHITE ? chessGame.getWhitePlayerId() : chessGame.getBlackPlayerId();
     view.removePiece(fromSquare);
     view.setPiece(toSquare, promotionPiece);
-
-    board.setLastPlayedMove(new Move(null, fromSquare, toSquare));
 
     view.clearPromotion(promotingPlayerId);
     if (color == PieceColor.WHITE) {

@@ -33,7 +33,10 @@ public final class EngineFactory {
   private final MoveCalculator moveCalculator;
   private final ChessGameService chessGameService;
 
-  public EngineFactory() {
+  /**
+   * @param verticalCastling whether the vertical castling easter egg is enabled
+   */
+  public EngineFactory(boolean verticalCastling) {
     Lazy lazy = new Lazy();
     MoveValidator validator = new MoveValidator(lazy);
     MoveCalculatorImpl calculator =
@@ -44,7 +47,8 @@ public final class EngineFactory {
             new BishopMoveCalculator(),
             new KnightMoveCalculator(),
             new QueenMoveCalculator(),
-            new KingMoveCalculator());
+            new KingMoveCalculator(),
+            verticalCastling);
     lazy.delegate = calculator;
 
     this.moveCalculator = calculator;

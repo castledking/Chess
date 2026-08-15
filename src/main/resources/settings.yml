@@ -62,3 +62,13 @@ resource-pack:
   # plugins/Chess/resourcepack.zip somewhere and point this at it; the SHA-1 is computed
   # automatically. Leave blank to send nothing directly.
   url: ''
+
+# Easter eggs. Off by default; these are not standard chess rules.
+easter-egg:
+  # Vertical castling (the Pam-Krabbe castling). When a pawn promotes to a rook on the king's
+  # own file, that rook has never moved, so the king may castle with it straight up the board:
+  # the king moves two squares towards it and the rook lands on the square the king crossed
+  # (e.g. white Ke1 with a promoted rook on e8 becomes Ke3, Re2). All the normal castling
+  # restrictions still apply — the king must not have moved, the file between them must be
+  # empty, and the king may not castle out of, through, or into check.
+  enable-vertical-castling: false
