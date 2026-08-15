@@ -50,19 +50,24 @@ public final class MoveHandler {
    * @param move the played move
    * @param playerId the id of the player who made the move
    * @param messageConfig to get custom messages
+   * @return whether the final game state is fully rendered for every viewer; {@code false} only
+   *     when a promotion is pending (just the promoter got their promotion dialog)
    */
-  public void handleSuccessfulMove(
+  public boolean handleSuccessfulMove(
       MoveResult moveResult, Move move, UUID playerId, MessageConfig messageConfig) {
     if (moveResult.checkmate()) {
       holder.endGame(playerId);
+      return true;
     } else if (moveResult.promotion()) {
       handlePromotion(move.from(), move.to(), playerId);
       view.showInfo(playerId, messageConfig.getPickPromotion());
+      return false;
     } else {
       view.applyMove(move);
       handleCastling(moveResult, move.to());
       handleEnPassant(moveResult, move.to(), playerId);
       finishMove(move.to());
+      return true;
     }
   }
 
@@ -187,9 +192,19 @@ public final class MoveHandler {
     view.unhighlightLegalMovesForBoth();
     view.highlightLastMove();
     view.highlightOpponentSelection(chessGame);
-    view.updateClock(chessGame.getTimeLeftMillis(currentTurn));
+    // No clock render here: it would send both viewers a dialog whose sequence is already
+    // obsolete by the time the final refresh below bumps it, and clicks racing that send
+    // (typically the mover starting a premove right after their own move) would be rejected
+    // as stale. The final refresh and the GameClock's 1-second re-render both show the clock.
 
     chessGame.toggleTurn();
+
+    // The turn just passed to the premover: fire their queued premove now, before the final
+    // re-render, so the board never briefly shows a stale position. A failed (no longer
+    // legal) premove is silently discarded. When a premove fired, its own finishMove already
+    // refreshed both boards with the final state — refresh again here would only bump the
+    // sequence and open a window that silently rejects the premover's next clicks.
+    boolean premoveRenderedFinalState = holder.playPremoveIfQueued();
 
     view.clearTimeHighlight(chessGame.getCurrentTurn());
     view.cancelInfoTasks();
@@ -197,8 +212,10 @@ public final class MoveHandler {
 
     holder.getDrawHandler().resetTimestamps();
 
-    // Re-render both boards from the now-authoritative state.
-    view.refresh();
+    if (!premoveRenderedFinalState) {
+      // Re-render both boards from the now-authoritative state.
+      view.refresh();
+    }
   }
 
   private void sendMessage(UUID playerId, String message) {

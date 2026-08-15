@@ -1,5 +1,6 @@
 package codes.castled.chess.ui;
 
+import com.dxzell.pocketchess.api.board.Square;
 import com.dxzell.pocketchess.api.move.Move;
 
 import java.util.Collection;
@@ -24,9 +25,11 @@ public final class DialogViewerRegistry {
   public static final class ViewerState {
     private final boolean spectator;
     private boolean flipped;
+    private boolean focused;
     private boolean displaying;
     private long revision;
     private String info = "";
+    @Nullable private Square ghostSelected;
     private DrawItemType drawState = DrawItemType.NONE;
     private String drawMessage = "";
     private boolean surrenderConfirming;
@@ -43,6 +46,15 @@ public final class DialogViewerRegistry {
 
     public boolean isFlipped() {
       return flipped;
+    }
+
+    public boolean isFocused() {
+      return focused;
+    }
+
+    @Nullable
+    public Square ghostSelected() {
+      return ghostSelected;
     }
 
     public boolean isDisplaying() {
@@ -132,6 +144,16 @@ public final class DialogViewerRegistry {
     return state.flipped;
   }
 
+  /** Toggles the focus preference for a viewer and returns the new value. */
+  public boolean toggleFocus(UUID viewerId) {
+    ViewerState state = viewers.get(viewerId);
+    if (state == null) {
+      return false;
+    }
+    state.focused = !state.focused;
+    return state.focused;
+  }
+
   /** Advances and returns the viewer's render revision. Called once per render. */
   public long nextRevision(UUID viewerId) {
     ViewerState state = viewers.get(viewerId);
@@ -189,6 +211,13 @@ public final class DialogViewerRegistry {
     ViewerState state = viewers.get(viewerId);
     if (state != null) {
       state.displaying = displaying;
+    }
+  }
+
+  public void setGhostSelected(UUID viewerId, @Nullable Square square) {
+    ViewerState state = viewers.get(viewerId);
+    if (state != null) {
+      state.ghostSelected = square;
     }
   }
 }

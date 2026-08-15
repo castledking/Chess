@@ -97,6 +97,12 @@ public interface ChessView {
   /** Removes any active promotion prompt for the player. */
   void clearPromotion(UUID playerId);
 
+  /** Marks a ghost square (premove destination) as selected for the viewer. */
+  void setGhostSelected(UUID viewerId, Square square);
+
+  /** @return the ghost-selected square for the viewer, or {@code null} */
+  Square getGhostSelected(UUID viewerId);
+
   /* Status / info line ----------------------------------------------- */
 
   void showInfo(UUID playerId, String message);

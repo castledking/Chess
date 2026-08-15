@@ -186,6 +186,17 @@ public final class DialogChessView implements ChessView, BoardClicks {
     registry.setPendingPromotion(playerId, null);
   }
 
+  @Override
+  public void setGhostSelected(UUID viewerId, Square square) {
+    registry.setGhostSelected(viewerId, square);
+  }
+
+  @Override
+  public Square getGhostSelected(UUID viewerId) {
+    DialogViewerRegistry.ViewerState state = registry.get(viewerId);
+    return state == null ? null : state.ghostSelected();
+  }
+
   /* Status / info ---------------------------------------------------- */
 
   @Override
@@ -284,11 +295,32 @@ public final class DialogChessView implements ChessView, BoardClicks {
   }
 
   @Override
+  public void onCancelPremoves(UUID viewerId) {
+    Scheduler.global(
+        plugin,
+        () -> {
+          if (!registry.isSpectator(viewerId)) {
+            game.handleCancelPremoves(viewerId);
+          }
+        });
+  }
+
+  @Override
   public void onFlip(UUID viewerId) {
     Scheduler.global(
         plugin,
         () -> {
           registry.toggleFlip(viewerId);
+          renderViewer(viewerId, moveSequence);
+        });
+  }
+
+  @Override
+  public void onFocus(UUID viewerId) {
+    Scheduler.global(
+        plugin,
+        () -> {
+          registry.toggleFocus(viewerId);
           renderViewer(viewerId, moveSequence);
         });
   }
@@ -332,7 +364,9 @@ public final class DialogChessView implements ChessView, BoardClicks {
     if (!state.isSpectator() && state.hasPendingPromotion()) {
       dialog = promotionDialog.build(viewerId, sequence, game.getColor(viewerId), this);
     } else {
-      dialog = boardDialog.build(game.getChessGame(), viewerId, state, sequence, this);
+      dialog =
+          boardDialog.build(
+              game.getChessGame(), viewerId, state, sequence, this, game.getPremoves(viewerId));
     }
 
     Scheduler.forPlayer(plugin, player, () -> player.showDialog(dialog));

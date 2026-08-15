@@ -9,6 +9,7 @@ messages:
     opponent-already-in-game: '&cYour requested opponent is currently playing a chess game.'
     both-in-game: '&cBoth you and your requested opponent are currently playing a chess game.'
     not-playing: '&cYou are currently not playing a chess game.'
+    target-not-in-game: '&cThat player is not currently in a chess game.'
     invalid-time-mode: '&cThis time mode is invalid. Please select one from the shown time modes.'
     already-requested-duel: '&cYou have already sent a duel request to this player. Wait for them to accept or decline.'
     duel-request-to-expired: '&7The duel request to [opponent] has expired.'
@@ -29,6 +30,7 @@ messages:
     # Messages displayed in chat.
     chat:
       started: '&bYour chess game has started. Close the board with the [Close] button and reopen it with &6/chess open &bat any time.'
+      watch-game: '&a&l[Watch Game]'
       opponent-moved: '&bYour opponent has made a move. Use &6/chess open &bto reopen the chess board.'
 
     # Info messages shown beneath the board.
@@ -65,15 +67,19 @@ messages:
       captured-black: <gray>Black captured:</gray> [pieces]
       captured-none: <dark_gray>—</dark_gray>
       control-resign: <red>[Resign]</red>
+      control-cancel-premoves: <red>[Cancel Premoves]</red>
       control-draw: <gold>[Draw]</gold>
       control-draw-accept: <green>[Accept Draw]</green>
       control-flip: <aqua>[Flip]</aqua>
+      control-focus: <yellow>[Focus]</yellow>
+      control-unfocus: <yellow>[Unfocus]</yellow>
       control-close: <gray>[Close]</gray>
       tooltip-coord: <gray>[coord]</gray>
       tooltip-piece: <white>[color] [piece]</white>
       tooltip-capture: <red>Capture</red>
       tooltip-legal: <green>Legal move</green>
       tooltip-last-move: <aqua>Last move</aqua>
+      tooltip-premove: <aqua>Premove</aqua>
       tooltip-check: <red>Check!</red>
       piece-pawn: Pawn
       piece-knight: Knight

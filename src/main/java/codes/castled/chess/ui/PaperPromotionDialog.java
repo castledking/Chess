@@ -1,6 +1,5 @@
 package codes.castled.chess.ui;
 
-import codes.castled.chess.config.MessageConfig;
 import com.dxzell.pocketchess.api.piece.Piece;
 import com.dxzell.pocketchess.api.piece.PieceColor;
 import com.dxzell.pocketchess.api.piece.PieceType;
@@ -31,18 +30,30 @@ public final class PaperPromotionDialog {
 
   private final DialogSettings settings;
   private final PieceGlyph glyph;
-  private final MessageConfig messages;
+  private final DialogLabels labels;
   private final ClickCallback.Options clickOptions;
 
   public PaperPromotionDialog(
       DialogSettings settings,
       PieceGlyph glyph,
-      MessageConfig messages,
+      DialogLabels labels,
       ClickCallback.Options clickOptions) {
     this.settings = settings;
     this.glyph = glyph;
-    this.messages = messages;
+    this.labels = labels;
     this.clickOptions = clickOptions;
+  }
+
+  /**
+   * The promotion dialog's body content — a single prompt line. Exposed for the dialog-growth
+   * test; the dialog itself never accumulates any other body content.
+   */
+  List<Component> bodyContent() {
+    return List.of(MINI.deserialize(labels.getDialogLabel("promotion-prompt")));
+  }
+
+  private static DialogBody toBody(Component component) {
+    return DialogBody.plainMessage(component);
   }
 
   /**
@@ -54,17 +65,17 @@ public final class PaperPromotionDialog {
    */
   public Dialog build(UUID viewerId, long sequence, PieceColor color, BoardClicks clicks) {
     DialogBase base =
-        DialogBase.builder(MINI.deserialize(messages.getDialogLabel("promotion-title")))
+        DialogBase.builder(MINI.deserialize(labels.getDialogLabel("promotion-title")))
             .canCloseWithEscape(false)
             .pause(false)
             .afterAction(DialogBase.DialogAfterAction.NONE)
-            .body(List.of(DialogBody.plainMessage(MINI.deserialize(messages.getDialogLabel("promotion-prompt")))))
+            .body(bodyContent().stream().map(PaperPromotionDialog::toBody).toList())
             .build();
 
     List<ActionButton> buttons = new java.util.ArrayList<>(CHOICES.length);
     for (PieceType type : CHOICES) {
       Component label = MINI.deserialize(glyph.forPlainPiece(new Piece(type, color)));
-      Component tooltip = MINI.deserialize(messages.getDialogLabel("piece-" + type.name().toLowerCase()));
+      Component tooltip = MINI.deserialize(labels.getDialogLabel("piece-" + type.name().toLowerCase()));
       PieceType chosen = type;
       buttons.add(
           ActionButton.create(

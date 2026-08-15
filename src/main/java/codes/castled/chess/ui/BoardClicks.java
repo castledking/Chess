@@ -29,6 +29,12 @@ public interface BoardClicks {
   /** The close control was clicked; {@code audience} is the clicking player. */
   void onClose(UUID viewerId, Audience audience);
 
+  /** The cancel-premoves control was clicked. */
+  void onCancelPremoves(UUID viewerId);
+
+  /** The focus/unfocus control was clicked. */
+  void onFocus(UUID viewerId);
+
   /** A promotion piece was chosen. */
   void onPromote(UUID viewerId, PieceType type, long sequence);
 }

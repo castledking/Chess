@@ -816,6 +816,294 @@
       "chars": [
         "\ue80c"
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/empty_light_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue018"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_pawn_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue901"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_rook_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue902"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_knight_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue903"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_bishop_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue904"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_queen_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue905"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_king_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue906"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_pawn_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue907"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_rook_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue908"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_knight_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue909"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_bishop_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue90a"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_queen_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue90b"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_king_light_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue90c"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/empty_dark_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue019"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_pawn_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea01"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_rook_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea02"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_knight_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea03"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_bishop_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea04"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_queen_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea05"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_king_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea06"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_pawn_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea07"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_rook_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea08"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_knight_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea09"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_bishop_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea0a"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_queen_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea0b"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_king_dark_square_premove.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uea0c"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/empty_light_check.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue01a"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/empty_dark_check.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ue01b"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_king_light_square_check.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ueb06"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/white_king_dark_square_check.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uec06"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_king_light_square_check.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\ueb0c"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "minecraft:item/black_king_dark_square_check.png",
+      "ascent": 14,
+      "height": 22,
+      "chars": [
+        "\uec0c"
+      ]
     }
   ]
 }

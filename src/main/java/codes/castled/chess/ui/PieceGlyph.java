@@ -27,9 +27,9 @@ import com.dxzell.pocketchess.api.piece.PieceType;
  * P,R,N,B,Q,K), used off-board where there is no square behind them. Board squares
  * use composites that bake the checkerboard tile in behind the piece, one plane per
  * (square colour, highlight) pair: {@code base + 0x300/0x400} plain light/dark,
- * {@code + 0x500/0x600} selected, {@code + 0x700/0x800} legal. The empty tiles
- * follow the same six states at {@code U+E010}, {@code U+E011} and
- * {@code U+E014..U+E017}.
+ * {@code + 0x500/0x600} selected, {@code + 0x700/0x800} legal, {@code + 0x900/0xA00}
+ * premove, {@code + 0xB00/0xC00} check (king on red square). The empty tiles follow the
+ * same ten states at {@code U+E010}, {@code U+E011}, {@code U+E014..U+E01B}.
  */
 public final class PieceGlyph {
 
@@ -42,11 +42,22 @@ public final class PieceGlyph {
     /** A square the selected piece may legally move to (or capture on). */
     LEGAL,
     /**
+     * The origin or destination square of a queued premove. A premove is played
+     * automatically as soon as it becomes the premover's turn, so it is shown with a
+     * distinct blue wash rather than the selected/legal colours.
+     */
+    PREMOVE,
+    /**
      * The origin or destination square of the last played move. Shown to every viewer
      * (both players and spectators) so the opponent can see what was just played, the
      * way most chess sites highlight the previous move.
      */
-    LAST_MOVE
+    LAST_MOVE,
+    /**
+     * The square occupied by a king that is in check. Shown with a red background
+     * and the king piece to make the check visually unmistakable.
+     */
+    CHECK
   }
 
   private static final char WHITE_PAWN = '';
@@ -76,6 +87,10 @@ public final class PieceGlyph {
   private static final int DARK_SQUARE_SELECTED_OFFSET = 0x600;
   private static final int LIGHT_SQUARE_LEGAL_OFFSET = 0x700;
   private static final int DARK_SQUARE_LEGAL_OFFSET = 0x800;
+  private static final int LIGHT_SQUARE_PREMOVE_OFFSET = 0x900;
+  private static final int DARK_SQUARE_PREMOVE_OFFSET = 0xA00;
+  private static final int LIGHT_SQUARE_CHECK_OFFSET = 0xB00;
+  private static final int DARK_SQUARE_CHECK_OFFSET = 0xC00;
 
   // Empty tiles with the highlight wash baked onto the checkerboard, so an empty
   // highlighted square keeps its square colour too.
@@ -83,6 +98,10 @@ public final class PieceGlyph {
   private static final char EMPTY_DARK_SELECTED = '';
   private static final char EMPTY_LIGHT_LEGAL = '';
   private static final char EMPTY_DARK_LEGAL = '';
+  private static final char EMPTY_LIGHT_PREMOVE = '';
+  private static final char EMPTY_DARK_PREMOVE = '';
+  private static final char EMPTY_LIGHT_CHECK = '';
+  private static final char EMPTY_DARK_CHECK = '';
 
   /**
    * MiniMessage font tag wrapping every glyph we emit. Our codepoints live in our own
@@ -142,6 +161,8 @@ public final class PieceGlyph {
           case SELECTED, LAST_MOVE ->
               base + (light ? LIGHT_SQUARE_SELECTED_OFFSET : DARK_SQUARE_SELECTED_OFFSET);
           case LEGAL -> base + (light ? LIGHT_SQUARE_LEGAL_OFFSET : DARK_SQUARE_LEGAL_OFFSET);
+          case PREMOVE -> base + (light ? LIGHT_SQUARE_PREMOVE_OFFSET : DARK_SQUARE_PREMOVE_OFFSET);
+          case CHECK -> base + (light ? LIGHT_SQUARE_CHECK_OFFSET : DARK_SQUARE_CHECK_OFFSET);
         };
     return boardTile((char) codepoint);
   }
@@ -174,12 +195,16 @@ public final class PieceGlyph {
         case NONE -> " ";
         case SELECTED, LAST_MOVE -> "☐"; // ballot box, distinct without colour
         case LEGAL -> "•"; // bullet marks a legal destination
+        case PREMOVE -> "☐"; // premove squares are not otherwise marked without colour
+        case CHECK -> "☐"; // check squares are not otherwise marked without colour
       };
     }
     return switch (highlight) {
       case NONE -> boardTile(light ? EMPTY_LIGHT : EMPTY_DARK);
       case SELECTED, LAST_MOVE -> boardTile(light ? EMPTY_LIGHT_SELECTED : EMPTY_DARK_SELECTED);
       case LEGAL -> boardTile(light ? EMPTY_LIGHT_LEGAL : EMPTY_DARK_LEGAL);
+      case PREMOVE -> boardTile(light ? EMPTY_LIGHT_PREMOVE : EMPTY_DARK_PREMOVE);
+      case CHECK -> boardTile(light ? EMPTY_LIGHT_CHECK : EMPTY_DARK_CHECK);
     };
   }
 

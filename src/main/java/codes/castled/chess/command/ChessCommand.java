@@ -50,6 +50,8 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
       case 2 -> {
         if (args[0].equalsIgnoreCase("accept") || args[0].equalsIgnoreCase("decline")) {
           handler.handleAcceptOrDecline(player, args[0], args[1]);
+        } else if (args[0].equalsIgnoreCase("watch")) {
+          handler.handleWatch(player, args[1]);
         } else if (args[0].equalsIgnoreCase("help")) {
           handler.sendHelp(player, args[1]);
         } else {
@@ -76,8 +78,8 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
             .toList();
     if (args.length == 1) {
       return StringUtil.copyPartialMatches(
-          args[0], Arrays.asList("duel", "open", "accept", "decline", "help"), new ArrayList<>());
-    } else if (args.length == 2 && args[0].equalsIgnoreCase("duel")) {
+          args[0], Arrays.asList("duel", "open", "accept", "decline", "watch", "help"), new ArrayList<>());
+    } else if (args.length == 2 && (args[0].equalsIgnoreCase("duel") || args[0].equalsIgnoreCase("watch"))) {
       return StringUtil.copyPartialMatches(args[1], otherPlayerNames, new ArrayList<>());
     } else if (args.length == 3 && args[0].equalsIgnoreCase("duel")) {
       return StringUtil.copyPartialMatches(args[2], TimeMode.getAllDisplayNames(), new ArrayList<>());

@@ -1,13 +1,18 @@
 package codes.castled.chess.ui;
 
-import codes.castled.chess.config.MessageConfig;
+import codes.castled.chess.game.ChessGameHolder;
 import codes.castled.chess.game.GameStatusEvaluator;
+import codes.castled.chess.game.PremoveMoveCalculator;
 import com.dxzell.pocketchess.api.board.ChessBoard;
 import com.dxzell.pocketchess.api.board.Square;
 import com.dxzell.pocketchess.api.game.ChessGame;
 import com.dxzell.pocketchess.api.move.Move;
 import com.dxzell.pocketchess.api.move.MoveCalculator;
 import com.dxzell.pocketchess.api.piece.Piece;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import com.dxzell.pocketchess.api.piece.PieceColor;
 import com.dxzell.pocketchess.api.piece.PieceType;
 import io.papermc.paper.dialog.Dialog;
@@ -28,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 /**
  * Builds the native Paper {@link Dialog} that renders the chess board for a single viewer.
  *
@@ -47,7 +54,7 @@ public final class PaperBoardDialog {
   private final PieceGlyph glyph;
   private final MoveCalculator moveCalculator;
   private final GameStatusEvaluator status;
-  private final MessageConfig messages;
+  private final DialogLabels labels;
   private final ClickCallback.Options clickOptions;
 
   public PaperBoardDialog(
@@ -55,13 +62,13 @@ public final class PaperBoardDialog {
       PieceGlyph glyph,
       MoveCalculator moveCalculator,
       GameStatusEvaluator status,
-      MessageConfig messages,
+      DialogLabels labels,
       ClickCallback.Options clickOptions) {
     this.settings = settings;
     this.glyph = glyph;
     this.moveCalculator = moveCalculator;
     this.status = status;
-    this.messages = messages;
+    this.labels = labels;
     this.clickOptions = clickOptions;
   }
 
@@ -73,6 +80,7 @@ public final class PaperBoardDialog {
    * @param state the viewer's presentation state
    * @param sequence the render sequence embedded in every clickable action
    * @param clicks the sink that receives button clicks
+   * @param premove the viewer's queued premoves, or empty
    * @return the dialog ready for {@code player.showDialog}
    */
   public Dialog build(
@@ -80,7 +88,8 @@ public final class PaperBoardDialog {
       UUID viewerId,
       DialogViewerRegistry.ViewerState state,
       long sequence,
-      BoardClicks clicks) {
+      BoardClicks clicks,
+      List<Move> premoves) {
     ChessBoard board = chessGame.getChessBoard();
     UUID whiteId = chessGame.getWhitePlayerId();
     UUID blackId = chessGame.getBlackPlayerId();
@@ -89,24 +98,41 @@ public final class PaperBoardDialog {
     BoardOrientation orientation = orientationFor(viewerColor, state.isFlipped());
 
     Square selected = state.isSpectator() ? null : chessGame.getSelectedPieceSquare(viewerId);
-    List<Square> legal =
-        (selected != null && settings.showLegalMoves())
-            ? moveCalculator.getPossibleMoves(chessGame, selected)
-            : List.of();
+    Square ghostSel = state.isSpectator() ? null : state.ghostSelected();
+    boolean viewerOnTurn = !state.isSpectator() && chessGame.getCurrentTurn().equals(viewerId);
+    List<Square> legal;
+    if (ghostSel != null && settings.showLegalMoves()) {
+      // Ghost square selected — compute moves from the simulated premove position
+      Map<Square, Piece> sim = ChessGameHolder.simulatePremoves(board, premoves);
+      Piece ghostPiece = sim.get(ghostSel);
+      legal = ghostPiece != null
+          ? ChessGameHolder.pseudoLegalMoves(sim, ghostSel, ghostPiece.color())
+          : List.of();
+      selected = ghostSel;
+    } else if (selected != null && settings.showLegalMoves() && !state.isSpectator()) {
+      if (viewerOnTurn) {
+        legal = moveCalculator.getPossibleMoves(chessGame, selected);
+      } else {
+        legal = PremoveMoveCalculator.getPremoveMoves(chessGame, selected);
+      }
+    } else {
+      legal = List.of();
+    }
     Move lastMove = settings.showLastMove() ? board.getLastPlayedMove() : null;
 
-    List<DialogBody> body = buildBody(chessGame, state, viewerColor, whiteId, blackId);
-    body.add(statusLine(chessGame, state, viewerId, whiteId, blackId, clicks));
+    List<DialogBody> body = buildBody(chessGame, state, whiteId, blackId);
+    body.add(statusLine(chessGame, state, viewerId, whiteId, blackId, clicks, premoves));
     // No side controls are appended to the action grid: the client lays out a multi-action grid
     // with one width per column (taken from the widest button in that column), so a 120px control
     // in the 8-column grid would widen the columns it shares with the 20px board cells and blow
     // the uniform board apart. Resign/Draw/Flip are clickable body text instead.
     List<ActionButton> buttons =
-        buildButtons(chessGame, viewerId, sequence, clicks, orientation, board, selected, legal, lastMove);
+        buildButtons(
+            chessGame, viewerId, sequence, clicks, orientation, board, selected, legal, lastMove, premoves);
 
     ActionButton close =
         ActionButton.create(
-            mini(messages.getDialogLabel("control-close")),
+            mini(labels.getDialogLabel("control-close")),
             null,
             120,
             DialogAction.customClick(
@@ -144,36 +170,52 @@ public final class PaperBoardDialog {
   /* Body -------------------------------------------------------------- */
 
   private List<DialogBody> buildBody(
+      ChessGame chessGame, DialogViewerRegistry.ViewerState state, UUID whiteId, UUID blackId) {
+    // Mutable: build() appends the clock/control status line to the returned list.
+    return bodyContent(
+            chessGame,
+            state,
+            whiteId,
+            blackId,
+            nameOf(whiteId, "White"),
+            nameOf(blackId, "Black"))
+        .stream()
+        .map(PaperBoardDialog::toBody)
+        .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+  }
+
+  /**
+   * Computes the dialog's body content as plain text components — one component per body line,
+   * in the exact order the dialog renders them. Kept component-level (rather than building
+   * {@link DialogBody} directly) so tests can measure how much content the dialog accumulates
+   * without a running Paper server.
+   */
+  List<Component> bodyContent(
       ChessGame chessGame,
       DialogViewerRegistry.ViewerState state,
-      PieceColor viewerColor,
       UUID whiteId,
-      UUID blackId) {
-    String whiteName = nameOf(whiteId, "White");
-    String blackName = nameOf(blackId, "Black");
-    UUID turn = chessGame.getCurrentTurn();
-    boolean whiteTurn = turn.equals(whiteId);
+      UUID blackId,
+      String whiteName,
+      String blackName) {
+    List<Component> body = new ArrayList<>();
 
-    List<DialogBody> body = new ArrayList<>();
-    body.add(line(messages.getDialogLabel("players", Map.of("[white]", whiteName, "[black]", blackName))));
-
-    if (state.isSpectator()) {
-      body.add(line(messages.getDialogLabel("spectating")));
+    if (!state.isFocused()) {
+      body.add(mini(labels.getDialogLabel("players", Map.of("[white]", whiteName, "[black]", blackName))));
     }
 
-    if (status.isInCheck(chessGame, turn)) {
-      body.add(line(messages.getDialogLabel("in-check", Map.of("[player]", whiteTurn ? whiteName : blackName))));
+    if (state.isSpectator() && !state.isFocused()) {
+      body.add(mini(labels.getDialogLabel("spectating")));
     }
 
-    if (settings.showCapturedPieces()) {
+    if (settings.showCapturedPieces() && !state.isFocused()) {
       body.add(
-          line(
-              messages.getDialogLabel(
+          mini(
+              labels.getDialogLabel(
                   "captured-white",
                   Map.of("[pieces]", capturedGlyphs(chessGame.getCapturedPieces(whiteId))))));
       body.add(
-          line(
-              messages.getDialogLabel(
+          mini(
+              labels.getDialogLabel(
                   "captured-black",
                   Map.of("[pieces]", capturedGlyphs(chessGame.getCapturedPieces(blackId))))));
     }
@@ -181,13 +223,13 @@ public final class PaperBoardDialog {
     // Info / draw / surrender messages come from MessageConfig (legacy '§' codes), not the
     // MiniMessage dialog labels, so they must be parsed with the legacy serializer.
     if (!state.info().isEmpty()) {
-      body.add(legacyLine(state.info()));
+      body.add(LEGACY.deserialize(state.info()));
     }
 
     if (!state.isSpectator()) {
       String drawMessage = drawStatusText(state);
       if (!drawMessage.isEmpty()) {
-        body.add(legacyLine(drawMessage));
+        body.add(LEGACY.deserialize(drawMessage));
       }
     }
 
@@ -215,30 +257,66 @@ public final class PaperBoardDialog {
       ChessBoard board,
       Square selected,
       List<Square> legal,
-      Move lastMove) {
+      Move lastMove,
+      List<Move> premoves) {
     UUID whiteId = chessGame.getWhitePlayerId();
     UUID blackId = chessGame.getBlackPlayerId();
     Square whiteCheckKing = checkedKingSquare(chessGame, whiteId, board);
     Square blackCheckKing = checkedKingSquare(chessGame, blackId, board);
+
+    // Collect all premove source/destination squares and ghost pieces across the full queue.
+    // Intermediate squares (destination of one premove, source of the next) keep the blue
+    // highlight but no ghost — only leaf destinations show the ghost piece.
+    Set<Square> premoveFroms = new HashSet<>();
+    Set<Square> premoveTos = new HashSet<>();
+    for (Move m : premoves) {
+      premoveFroms.add(m.from());
+      premoveTos.add(m.to());
+    }
+    // Show ghost pieces on ALL premove destinations from the simulated position.
+    // Intermediate squares (both source and destination) show the piece that arrives there.
+    Map<Square, Piece> sim = ChessGameHolder.simulatePremoves(board, premoves);
+    Map<Square, Piece> ghosts = new HashMap<>();
+    for (Move m : premoves) {
+      Piece simPiece = sim.get(m.to());
+      if (simPiece != null) {
+        ghosts.putIfAbsent(m.to(), simPiece);
+      }
+    }
 
     List<ActionButton> buttons = new ArrayList<>(BoardOrientation.SIZE * BoardOrientation.SIZE);
     for (int row = 0; row < BoardOrientation.SIZE; row++) {
       for (int col = 0; col < BoardOrientation.SIZE; col++) {
         Square square = orientation.toSquare(row, col);
         Piece piece = board.getPiece(square);
+        boolean isPremoveSquare = premoveFroms.contains(square) || premoveTos.contains(square);
 
         PieceGlyph.Highlight highlight = PieceGlyph.Highlight.NONE;
-        if (square.equals(selected)) {
+        boolean inCheck = square.equals(whiteCheckKing) || square.equals(blackCheckKing);
+        if (inCheck) {
+          highlight = PieceGlyph.Highlight.CHECK;
+        } else if (square.equals(selected)) {
           highlight = PieceGlyph.Highlight.SELECTED;
         } else if (legal.contains(square)) {
           highlight = PieceGlyph.Highlight.LEGAL;
+        } else if (isPremoveSquare) {
+          highlight = PieceGlyph.Highlight.PREMOVE;
         } else if (isLastMoveSquare(lastMove, square)) {
           highlight = PieceGlyph.Highlight.LAST_MOVE;
         }
 
         boolean light = ((square.getColumnIndex() + square.getRowIndex()) % 2) == 1;
+        // Premove leaving squares show an empty blue tile; destination squares show a ghost.
+        Piece glyphPiece;
+        if (premoveFroms.contains(square)) {
+          glyphPiece = null;
+        } else if (ghosts.containsKey(square)) {
+          glyphPiece = ghosts.get(square);
+        } else {
+          glyphPiece = piece;
+        }
         String text =
-            piece != null ? glyph.forPiece(piece, highlight, light) : glyph.forEmpty(light, highlight);
+            glyphPiece != null ? glyph.forPiece(glyphPiece, highlight, light) : glyph.forEmpty(light, highlight);
 
         Component tooltip =
             tooltip(
@@ -246,7 +324,8 @@ public final class PaperBoardDialog {
                 piece,
                 legal,
                 lastMove,
-                square.equals(whiteCheckKing) || square.equals(blackCheckKing));
+                isPremoveSquare,
+                inCheck);
 
         Square target = square;
         buttons.add(
@@ -274,18 +353,19 @@ public final class PaperBoardDialog {
       UUID viewerId,
       UUID whiteId,
       UUID blackId,
-      BoardClicks clicks) {
+      BoardClicks clicks,
+      List<Move> premoves) {
     List<Component> pieces = new ArrayList<>(2);
     if (settings.showClock()) {
       pieces.add(
           mini(
-              messages.getDialogLabel(
+              labels.getDialogLabel(
                   "clock",
                   Map.of(
                       "[white]", formatMillis(chessGame.getTimeLeftMillis(whiteId)),
                       "[black]", formatMillis(chessGame.getTimeLeftMillis(blackId))))));
     }
-    pieces.add(controlsComponent(viewerId, state, clicks));
+    pieces.add(controlsComponent(viewerId, state, clicks, premoves));
 
     Component line = pieces.get(0);
     for (int i = 1; i < pieces.size(); i++) {
@@ -294,21 +374,30 @@ public final class PaperBoardDialog {
     return DialogBody.plainMessage(line, 200);
   }
 
-  /** Resign/Draw/Flip as one clickable line so the 8x8 action grid stays uniform. */
+  /** Resign/Draw/Flip/Focus as one clickable line so the 8x8 action grid stays uniform. */
   private Component controlsComponent(
-      UUID viewerId, DialogViewerRegistry.ViewerState state, BoardClicks clicks) {
-    List<Component> items = new ArrayList<>(3);
+      UUID viewerId, DialogViewerRegistry.ViewerState state, BoardClicks clicks, List<Move> premoves) {
+    List<Component> items = new ArrayList<>(4);
     if (!state.isSpectator()) {
+      if (!premoves.isEmpty()) {
+        items.add(
+            controlText(
+                labels.getDialogLabel("control-cancel-premoves"), b -> clicks.onCancelPremoves(viewerId)));
+      } else {
+        items.add(
+            controlText(
+                labels.getDialogLabel("control-resign"), b -> clicks.onResign(viewerId)));
+      }
       items.add(
           controlText(
-              messages.getDialogLabel("control-resign"), b -> clicks.onResign(viewerId)));
-      items.add(
-          controlText(
-              messages.getDialogLabel(
+              labels.getDialogLabel(
                   state.drawState() == DrawItemType.ACCEPT ? "control-draw-accept" : "control-draw"),
               b -> clicks.onDraw(viewerId)));
     }
-    items.add(controlText(messages.getDialogLabel("control-flip"), b -> clicks.onFlip(viewerId)));
+    items.add(controlText(labels.getDialogLabel("control-flip"), b -> clicks.onFlip(viewerId)));
+    items.add(controlText(
+        labels.getDialogLabel(state.isFocused() ? "control-unfocus" : "control-focus"),
+        b -> clicks.onFocus(viewerId)));
 
     Component line = items.get(0);
     for (int i = 1; i < items.size(); i++) {
@@ -335,27 +424,30 @@ public final class PaperBoardDialog {
   }
 
   private Component tooltip(
-      Square square, Piece piece, List<Square> legal, Move lastMove, boolean inCheck) {
+      Square square, Piece piece, List<Square> legal, Move lastMove, boolean premove, boolean inCheck) {
     List<String> lines = new ArrayList<>();
     if (settings.showCoordinates()) {
-      lines.add(messages.getDialogLabel("tooltip-coord", Map.of("[coord]", SquareNotation.toAlgebraic(square))));
+      lines.add(labels.getDialogLabel("tooltip-coord", Map.of("[coord]", SquareNotation.toAlgebraic(square))));
     }
     if (piece != null) {
       lines.add(
-          messages.getDialogLabel(
+          labels.getDialogLabel(
               "tooltip-piece",
               Map.of(
-                  "[color]", messages.getDialogLabel(piece.color() == PieceColor.WHITE ? "white" : "black"),
+                  "[color]", labels.getDialogLabel(piece.color() == PieceColor.WHITE ? "white" : "black"),
                   "[piece]", pieceName(piece))));
     }
     if (legal.contains(square)) {
-      lines.add(messages.getDialogLabel(piece != null ? "tooltip-capture" : "tooltip-legal"));
+      lines.add(labels.getDialogLabel(piece != null ? "tooltip-capture" : "tooltip-legal"));
     }
     if (lastMove != null && (square.equals(lastMove.from()) || square.equals(lastMove.to()))) {
-      lines.add(messages.getDialogLabel("tooltip-last-move"));
+      lines.add(labels.getDialogLabel("tooltip-last-move"));
+    }
+    if (premove) {
+      lines.add(labels.getDialogLabel("tooltip-premove"));
     }
     if (inCheck) {
-      lines.add(messages.getDialogLabel("tooltip-check"));
+      lines.add(labels.getDialogLabel("tooltip-check"));
     }
     if (lines.isEmpty()) {
       return null;
@@ -370,13 +462,8 @@ public final class PaperBoardDialog {
 
   /* Helpers ----------------------------------------------------------- */
 
-  private DialogBody line(String mini) {
-    return DialogBody.plainMessage(mini(mini));
-  }
-
-  /** For MessageConfig-sourced text carrying legacy '§' colour codes (info/draw/surrender). */
-  private DialogBody legacyLine(String legacy) {
-    return DialogBody.plainMessage(LEGACY.deserialize(legacy));
+  private static DialogBody toBody(Component component) {
+    return DialogBody.plainMessage(component);
   }
 
   private static Component mini(String value) {
@@ -385,7 +472,7 @@ public final class PaperBoardDialog {
 
   private String capturedGlyphs(List<Piece> pieces) {
     if (pieces == null || pieces.isEmpty()) {
-      return messages.getDialogLabel("captured-none");
+      return labels.getDialogLabel("captured-none");
     }
     StringBuilder builder = new StringBuilder();
     for (Piece piece : pieces) {
@@ -395,7 +482,7 @@ public final class PaperBoardDialog {
   }
 
   private String pieceName(Piece piece) {
-    return messages.getDialogLabel("piece-" + piece.type().name().toLowerCase());
+    return labels.getDialogLabel("piece-" + piece.type().name().toLowerCase());
   }
 
   private static String nameOf(UUID playerId, String fallback) {

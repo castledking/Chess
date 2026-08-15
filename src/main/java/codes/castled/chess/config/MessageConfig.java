@@ -1,18 +1,15 @@
 package codes.castled.chess.config;
 
 import codes.castled.chess.Chess;
+import codes.castled.chess.ui.DialogLabels;
 
 import java.util.Map;
 
 /** Provides access to all plugin-sent messages and the dialog board labels. */
-public final class MessageConfig extends Config {
+public final class MessageConfig extends Config implements DialogLabels {
 
   public MessageConfig(Chess plugin) {
     super(plugin, "messages.yml");
-  }
-
-  public String getNotYourTurn() {
-    return getColoredString(getInfoPath() + "not-your-turn");
   }
 
   public String getNoPieceSelected() {
@@ -69,6 +66,10 @@ public final class MessageConfig extends Config {
 
   public String getNotPlaying() {
     return getColoredString(getChessCommandMessagePath() + "not-playing");
+  }
+
+  public String getTargetNotInGame() {
+    return getColoredString(getChessCommandMessagePath() + "target-not-in-game");
   }
 
   public String getOpponentNotOnline() {

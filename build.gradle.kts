@@ -31,10 +31,22 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
+
+    // Tests: JUnit 5, the Paper API (Component/dialog types) and the engine, which is already
+    // on the implementation classpath. The tests exercise the pure content builders and the
+    // engine only, so no running server is required.
+    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 group = "codes.castled"
-version = "1.0.0"
+version = "1.0.2"
 
 java {
     toolchain {

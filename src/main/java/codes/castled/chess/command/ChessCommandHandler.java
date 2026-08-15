@@ -84,6 +84,21 @@ public final class ChessCommandHandler {
     player.sendMessage(messageConfig.getInvalidArgsCmd());
   }
 
+  /** Spectates the game the target player is in. */
+  public void handleWatch(Player player, String targetName) {
+    Player target = Bukkit.getPlayer(targetName);
+    if (target == null) {
+      player.sendMessage(messageConfig.getOpponentNotOnline());
+      return;
+    }
+    ChessGameHolder game = gameService.getGameByPlayer(target.getUniqueId());
+    if (game == null) {
+      player.sendMessage(messageConfig.getTargetNotInGame());
+      return;
+    }
+    game.getView().addSpectator(player.getUniqueId());
+  }
+
   public void sendHelp(Player player, String indexString) {
     try {
       int index = Integer.parseInt(indexString);
