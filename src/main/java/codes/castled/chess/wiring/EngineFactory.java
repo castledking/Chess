@@ -1,20 +1,20 @@
 package codes.castled.chess.wiring;
 
-import com.dxzell.pocketchess.api.board.ChessBoard;
-import com.dxzell.pocketchess.api.board.Square;
-import com.dxzell.pocketchess.api.game.ChessGame;
-import com.dxzell.pocketchess.api.game.ChessGameService;
-import com.dxzell.pocketchess.api.move.MoveCalculator;
-import com.dxzell.pocketchess.api.piece.PieceColor;
-import com.dxzell.pocketchess.common.game.ChessGameServiceImpl;
-import com.dxzell.pocketchess.common.move.MoveCalculatorImpl;
-import com.dxzell.pocketchess.common.move.MoveValidator;
-import com.dxzell.pocketchess.common.move.calculator.BishopMoveCalculator;
-import com.dxzell.pocketchess.common.move.calculator.KingMoveCalculator;
-import com.dxzell.pocketchess.common.move.calculator.KnightMoveCalculator;
-import com.dxzell.pocketchess.common.move.calculator.PawnMoveCalculator;
-import com.dxzell.pocketchess.common.move.calculator.QueenMoveCalculator;
-import com.dxzell.pocketchess.common.move.calculator.RookMoveCalculator;
+import codes.castled.chess.engine.api.board.ChessBoard;
+import codes.castled.chess.engine.api.board.Square;
+import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.ChessGameService;
+import codes.castled.chess.engine.api.move.MoveCalculator;
+import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.common.game.ChessGameServiceImpl;
+import codes.castled.chess.engine.common.move.MoveCalculatorImpl;
+import codes.castled.chess.engine.common.move.MoveValidator;
+import codes.castled.chess.engine.common.move.calculator.BishopMoveCalculator;
+import codes.castled.chess.engine.common.move.calculator.KingMoveCalculator;
+import codes.castled.chess.engine.common.move.calculator.KnightMoveCalculator;
+import codes.castled.chess.engine.common.move.calculator.PawnMoveCalculator;
+import codes.castled.chess.engine.common.move.calculator.QueenMoveCalculator;
+import codes.castled.chess.engine.common.move.calculator.RookMoveCalculator;
 
 import java.util.List;
 

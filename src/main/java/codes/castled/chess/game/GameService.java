@@ -4,12 +4,12 @@ import codes.castled.chess.Chess;
 import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.config.SettingsConfig;
 import codes.castled.chess.ui.ChessViewFactory;
-import com.dxzell.pocketchess.api.game.ChessGame;
-import com.dxzell.pocketchess.api.game.ChessGameService;
-import com.dxzell.pocketchess.api.game.GameCreationResult;
-import com.dxzell.pocketchess.api.game.GameCreationResultType;
-import com.dxzell.pocketchess.api.game.TimeMode;
-import com.dxzell.pocketchess.api.move.MoveCalculator;
+import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.ChessGameService;
+import codes.castled.chess.engine.api.game.GameCreationResult;
+import codes.castled.chess.engine.api.game.GameCreationResultType;
+import codes.castled.chess.engine.api.game.TimeMode;
+import codes.castled.chess.engine.api.move.MoveCalculator;
 import org.bukkit.entity.Player;
 
 import java.util.List;

@@ -4,7 +4,7 @@ import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.game.ChessGameHolder;
 import codes.castled.chess.game.GameService;
 import codes.castled.chess.request.DuelRequestService;
-import com.dxzell.pocketchess.api.game.TimeMode;
+import codes.castled.chess.engine.api.game.TimeMode;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

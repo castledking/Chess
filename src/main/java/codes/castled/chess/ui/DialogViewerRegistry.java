@@ -1,7 +1,7 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.board.Square;
-import com.dxzell.pocketchess.api.move.Move;
+import codes.castled.chess.engine.api.board.Square;
+import codes.castled.chess.engine.api.move.Move;
 
 import java.util.Collection;
 import java.util.List;

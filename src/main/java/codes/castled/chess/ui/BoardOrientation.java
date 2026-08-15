@@ -1,7 +1,7 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.board.Square;
-import com.dxzell.pocketchess.api.piece.PieceColor;
+import codes.castled.chess.engine.api.board.Square;
+import codes.castled.chess.engine.api.piece.PieceColor;
 
 /**
  * Converts between chess board squares and the row/column indices of a rendered

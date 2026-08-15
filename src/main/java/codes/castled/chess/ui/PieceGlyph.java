@@ -1,8 +1,8 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.piece.Piece;
-import com.dxzell.pocketchess.api.piece.PieceColor;
-import com.dxzell.pocketchess.api.piece.PieceType;
+import codes.castled.chess.engine.api.piece.Piece;
+import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.api.piece.PieceType;
 
 /**
  * Maps chess pieces and empty-square states to the glyph string rendered inside a

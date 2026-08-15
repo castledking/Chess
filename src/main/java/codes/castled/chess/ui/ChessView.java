@@ -1,9 +1,9 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.board.Square;
-import com.dxzell.pocketchess.api.game.ChessGame;
-import com.dxzell.pocketchess.api.move.Move;
-import com.dxzell.pocketchess.api.piece.Piece;
+import codes.castled.chess.engine.api.board.Square;
+import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.move.Move;
+import codes.castled.chess.engine.api.piece.Piece;
 
 import java.util.UUID;
 

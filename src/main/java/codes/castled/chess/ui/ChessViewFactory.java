@@ -5,7 +5,7 @@ import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.config.UiConfig;
 import codes.castled.chess.game.ChessGameHolder;
 import codes.castled.chess.game.GameStatusEvaluator;
-import com.dxzell.pocketchess.api.move.MoveCalculator;
+import codes.castled.chess.engine.api.move.MoveCalculator;
 
 /** Constructs the Paper dialog {@link ChessView} for each game. */
 public final class ChessViewFactory {

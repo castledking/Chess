@@ -2,16 +2,16 @@ package codes.castled.chess.game;
 
 import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.ui.ChessView;
-import com.dxzell.pocketchess.api.board.Square;
-import com.dxzell.pocketchess.api.game.ChessGame;
-import com.dxzell.pocketchess.api.move.Move;
-import com.dxzell.pocketchess.api.move.MoveCalculator;
-import com.dxzell.pocketchess.api.move.MoveResult;
-import com.dxzell.pocketchess.api.piece.Piece;
-import com.dxzell.pocketchess.api.piece.PieceColor;
-import com.dxzell.pocketchess.api.piece.PieceType;
-import com.dxzell.pocketchess.common.board.ChessBoardImpl;
-import com.dxzell.pocketchess.common.board.SquareUtils;
+import codes.castled.chess.engine.api.board.Square;
+import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.move.Move;
+import codes.castled.chess.engine.api.move.MoveCalculator;
+import codes.castled.chess.engine.api.move.MoveResult;
+import codes.castled.chess.engine.api.piece.Piece;
+import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.api.piece.PieceType;
+import codes.castled.chess.engine.common.board.ChessBoardImpl;
+import codes.castled.chess.engine.common.board.SquareUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

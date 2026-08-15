@@ -1,8 +1,8 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.piece.Piece;
-import com.dxzell.pocketchess.api.piece.PieceColor;
-import com.dxzell.pocketchess.api.piece.PieceType;
+import codes.castled.chess.engine.api.piece.Piece;
+import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.api.piece.PieceType;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.DialogBase;

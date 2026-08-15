@@ -1,6 +1,6 @@
 package codes.castled.chess.request;
 
-import com.dxzell.pocketchess.api.game.TimeMode;
+import codes.castled.chess.engine.api.game.TimeMode;
 
 import java.util.UUID;
 

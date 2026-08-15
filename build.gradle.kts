@@ -18,23 +18,21 @@ dependencies {
     // Paper provides the Dialog API and Adventure at runtime.
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
 
-    // The pure chess engine (rules + game/service impls), bundled into the jar so the plugin
-    // has no external dependency. The engine is wired by hand (see EngineFactory), so its Guice
-    // module is unused and Guice/Guava are NOT pulled in — keeping the jar tiny. Relocated under
-    // codes.castled.chess.engine so it never clashes with another plugin shipping the same engine.
-    implementation("com.dxzell:pocket-chess-api:1.0-SNAPSHOT") { isTransitive = false }
-    implementation("com.dxzell:pocket-chess-common:1.0-SNAPSHOT") { isTransitive = false }
+    // The chess engine now lives in-tree under codes.castled.chess.engine (vendored from
+    // PocketChess), so there is no external engine dependency and nothing to relocate. It is
+    // wired by hand in EngineFactory, so no dependency-injection framework is needed either.
 
-    // Compile-only: the engine's .class files carry @Inject annotations; keep Guice on the
-    // compile classpath to resolve them, but never bundle it (we wire by hand at runtime).
-    compileOnly("com.google.inject:guice:7.0.0")
+    // Compile-only: @Nullable is CLASS-retention, so it is needed to compile but never at
+    // runtime. Previously this arrived transitively via Guice -> Guava; declare it directly
+    // now that Guice is gone.
+    compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
 
-    // Tests: JUnit 5, the Paper API (Component/dialog types) and the engine, which is already
-    // on the implementation classpath. The tests exercise the pure content builders and the
-    // engine only, so no running server is required.
+    // Tests: JUnit 5 and the Paper API (Component/dialog types). The engine is in-tree, so it
+    // needs no test dependency. The tests exercise the pure content builders and the engine
+    // only, so no running server is required.
     testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -83,8 +81,6 @@ tasks.processResources {
 tasks.shadowJar {
     // Always produce Chess.jar regardless of version.
     archiveFileName.set("Chess.jar")
-    // Relocate the bundled engine so it never clashes with another plugin shipping it.
-    relocate("com.dxzell.pocketchess", "codes.castled.chess.engine")
     mergeServiceFiles()
 }
 

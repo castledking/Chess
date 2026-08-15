@@ -2,7 +2,7 @@ package codes.castled.chess.game;
 
 import codes.castled.chess.Chess;
 import codes.castled.chess.util.Scheduler;
-import com.dxzell.pocketchess.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.ChessGame;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 import java.util.UUID;

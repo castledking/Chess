@@ -2,7 +2,7 @@ package codes.castled.chess.command;
 
 import codes.castled.chess.Chess;
 import codes.castled.chess.util.Scheduler;
-import com.dxzell.pocketchess.api.game.TimeMode;
+import codes.castled.chess.engine.api.game.TimeMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

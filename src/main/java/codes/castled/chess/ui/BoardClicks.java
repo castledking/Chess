@@ -1,7 +1,7 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.board.Square;
-import com.dxzell.pocketchess.api.piece.PieceType;
+import codes.castled.chess.engine.api.board.Square;
+import codes.castled.chess.engine.api.piece.PieceType;
 import net.kyori.adventure.audience.Audience;
 
 import java.util.UUID;

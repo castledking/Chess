@@ -1,6 +1,6 @@
 package codes.castled.chess.ui;
 
-import com.dxzell.pocketchess.api.board.Square;
+import codes.castled.chess.engine.api.board.Square;
 
 /**
  * Converts board squares to and from lower-case algebraic notation (e.g. {@code e2}).
