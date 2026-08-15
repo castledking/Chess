@@ -297,8 +297,29 @@ public final class PaperBoardDialog {
         Piece piece = board.getPiece(square);
         boolean isPremoveSquare = premoveFroms.contains(square) || premoveTos.contains(square);
 
+        boolean light = ((square.getColumnIndex() + square.getRowIndex()) % 2) == 1;
+        // Premove leaving squares show an empty blue tile; destination squares show a ghost.
+        // Either way the square is rendering the projected position, not the real one.
+        Piece glyphPiece;
+        boolean projected;
+        if (premoveFroms.contains(square)) {
+          glyphPiece = null;
+          projected = true;
+        } else if (ghosts.containsKey(square)) {
+          glyphPiece = ghosts.get(square);
+          projected = true;
+        } else {
+          glyphPiece = piece;
+          projected = false;
+        }
+
         PieceGlyph.Highlight highlight = PieceGlyph.Highlight.NONE;
-        boolean inCheck = square.equals(whiteCheckKing) || square.equals(blackCheckKing);
+        // The check wash describes the authoritative position, so a square already rendering
+        // the premove projection must not take it: premoving a capture onto a checked king
+        // shows the capturing piece as a ghost, and by the time that premove plays the king
+        // may have moved away. Such a square stays blue like any other premove destination.
+        boolean inCheck =
+            !projected && (square.equals(whiteCheckKing) || square.equals(blackCheckKing));
         if (inCheck) {
           highlight = PieceGlyph.Highlight.CHECK;
         } else if (square.equals(selected)) {
@@ -309,17 +330,6 @@ public final class PaperBoardDialog {
           highlight = PieceGlyph.Highlight.PREMOVE;
         } else if (isLastMoveSquare(lastMove, square)) {
           highlight = PieceGlyph.Highlight.LAST_MOVE;
-        }
-
-        boolean light = ((square.getColumnIndex() + square.getRowIndex()) % 2) == 1;
-        // Premove leaving squares show an empty blue tile; destination squares show a ghost.
-        Piece glyphPiece;
-        if (premoveFroms.contains(square)) {
-          glyphPiece = null;
-        } else if (ghosts.containsKey(square)) {
-          glyphPiece = ghosts.get(square);
-        } else {
-          glyphPiece = piece;
         }
         String text =
             glyphPiece != null ? glyph.forPiece(glyphPiece, highlight, light) : glyph.forEmpty(light, highlight);

@@ -151,6 +151,13 @@ public final class PieceGlyph {
       return unicodeFor(piece);
     }
     char base = plainCodepoint(piece);
+    // The check plane is the one incomplete plane: since only a king can be in check, the
+    // pack bakes it for the two kings and nothing else. Asking for any other piece there
+    // would emit a codepoint board.json does not declare, which the client renders as a
+    // tofu box. Fall back to the plain tile rather than a missing glyph.
+    if (highlight == Highlight.CHECK && piece.type() != PieceType.KING) {
+      highlight = Highlight.NONE;
+    }
     // Every state uses a composite that has the checkerboard baked in, so a square never
     // loses its colour just because it became highlighted.
     int codepoint =
