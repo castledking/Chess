@@ -22,7 +22,7 @@ import codes.castled.chess.engine.api.piece.PieceType;
  *       boxes when the pack is absent.
  * </ul>
  *
- * <p>Codepoint scheme (also declared in the pack's {@code pocketchess:board} font):
+ * <p>Codepoint scheme (also declared in the pack's {@code chess:board} font):
  * {@code U+E001..U+E00C} are the plain pieces (white P,R,N,B,Q,K then black
  * P,R,N,B,Q,K), used off-board where there is no square behind them. Board squares
  * use composites that bake the checkerboard tile in behind the piece, one plane per
@@ -105,14 +105,14 @@ public final class PieceGlyph {
 
   /**
    * MiniMessage font tag wrapping every glyph we emit. Our codepoints live in our own
-   * {@code assets/pocketchess/font/board.json} rather than {@code minecraft:default},
+   * {@code assets/chess/font/board.json} rather than {@code minecraft:default},
    * because that font is shared: ResourcePackManager merges the providers array of every
    * installed pack into it, and the last provider to claim a codepoint wins. Nexo puts
    * its {@code required/} glyphs in the same low private-use range, so U+E008 was
    * resolving to its exit icon instead of the black rook. A private font namespace has no
-   * such contention — no other pack declares {@code pocketchess:board}.
+   * such contention — no other pack declares {@code chess:board}.
    */
-  private static final String FONT_OPEN = "<font:pocketchess:board>";
+  private static final String FONT_OPEN = "<font:chess:board>";
 
   private static final String FONT_CLOSE = "</font>";
 
