@@ -16,12 +16,9 @@ import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.api.piece.PieceType;
 import codes.castled.chess.engine.common.board.SquareUtils;
+import codes.castled.chess.chat.InviteBroadcaster;
+import codes.castled.chess.chat.WatchInvite;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -63,6 +60,9 @@ public final class ChessGameHolder {
    * later turns) the moment their turn arrives. Only ever touched on the global region thread.
    */
   private final Map<UUID, Deque<Move>> premoves = new HashMap<>();
+
+  /** Renders the watch broadcast with whichever chat library the server has. */
+  private final InviteBroadcaster inviteBroadcaster = InviteBroadcaster.forPlatform();
 
   public ChessGameHolder(
       Chess plugin,
@@ -106,23 +106,17 @@ public final class ChessGameHolder {
     if (whiteName == null) whiteName = "White";
     if (blackName == null) blackName = "Black";
 
-    Component msg =
-        Component.text("")
-            .append(Component.text("[", NamedTextColor.GRAY))
-            .append(Component.text("Watch Game", NamedTextColor.GREEN, TextDecoration.BOLD))
-            .append(Component.text("] ", NamedTextColor.GRAY))
-            .append(Component.text(whiteName, NamedTextColor.WHITE))
-            .append(Component.text(" vs ", NamedTextColor.GRAY))
-            .append(Component.text(blackName, NamedTextColor.WHITE))
-            .clickEvent(ClickEvent.suggestCommand("/chess watch " + whiteName))
-            .hoverEvent(HoverEvent.showText(
-                Component.text("Click to spectate this game", NamedTextColor.GREEN)));
-
-    for (Player online : Bukkit.getOnlinePlayers()) {
-      if (!online.getUniqueId().equals(whiteId) && !online.getUniqueId().equals(blackId)) {
-        online.sendMessage(msg);
-      }
-    }
+    // Rendering is delegated so this class names no chat library: Spigot has no Adventure.
+    inviteBroadcaster.broadcast(
+        new WatchInvite(
+            "Watch Game",
+            whiteName,
+            blackName,
+            " vs ",
+            "/chess watch " + whiteName,
+            "Click to spectate this game"),
+        whiteId,
+        blackId);
   }
 
   /**

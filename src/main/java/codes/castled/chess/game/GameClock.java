@@ -3,7 +3,7 @@ package codes.castled.chess.game;
 import codes.castled.chess.Chess;
 import codes.castled.chess.util.Scheduler;
 import codes.castled.chess.engine.api.game.ChessGame;
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import codes.castled.chess.util.Task;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ public final class GameClock {
   private final Chess plugin;
   private final ChessGameHolder holder;
   private final ChessGame chessGame;
-  private ScheduledTask task;
+  private Task task;
   private long lastUpdateMillis;
 
   public GameClock(Chess plugin, ChessGameHolder holder) {

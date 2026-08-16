@@ -8,7 +8,7 @@ import codes.castled.chess.util.Scheduler;
 import codes.castled.chess.engine.api.game.GameCreationResult;
 import codes.castled.chess.engine.api.game.GameCreationResultType;
 import codes.castled.chess.engine.api.game.TimeMode;
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import codes.castled.chess.util.Task;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -24,7 +24,7 @@ public final class DuelRequestService {
   private final MessageConfig messageConfig;
   private final List<DuelRequest> ongoingRequests = new ArrayList<>();
   private final long expireTimeMillis;
-  private ScheduledTask requestTask;
+  private Task requestTask;
 
   public DuelRequestService(
       Chess plugin,
