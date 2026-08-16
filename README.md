@@ -90,13 +90,12 @@ empty, and the king may not castle out of, through, or into check. Off by defaul
 
 ## Building
 
-Chess uses Java 21 and Gradle. Its bundled rules engine comes from the
-[PocketChess](https://github.com/dxzell/PocketChess) API and common modules, currently pinned to
-commit `f7288f0431c60eb889070bd3ced80d02905169ec` by CI.
+Chess uses Java 21 and Gradle. The rules engine is part of this repository, so there is nothing
+else to fetch or install.
 
 ```bash
-git clone https://github.com/dxzell/PocketChess.git
-mvn --file PocketChess/pom.xml --projects pocket-chess-api,pocket-chess-common --also-make install -DskipTests
+git clone https://github.com/castledking/Chess.git
+cd Chess
 gradle clean build
 ```
 
