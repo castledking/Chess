@@ -10,6 +10,16 @@ public final class UiConfig extends Config {
     super(plugin, "settings.yml");
   }
 
+  /**
+   * @return which board to render: {@code auto}, {@code dialog} or {@code inventory}. Anything
+   *     unrecognised is treated as {@code auto} so a typo degrades to working behaviour rather
+   *     than no board at all.
+   */
+  public String getViewMode() {
+    String mode = config.getString("ui.mode", "auto");
+    return mode == null ? "auto" : mode.trim().toLowerCase(java.util.Locale.ROOT);
+  }
+
   /** @return the dialog appearance/behaviour settings */
   public DialogSettings getDialogSettings() {
     return new DialogSettings(

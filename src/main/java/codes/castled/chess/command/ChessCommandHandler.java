@@ -96,7 +96,11 @@ public final class ChessCommandHandler {
       player.sendMessage(messageConfig.getTargetNotInGame());
       return;
     }
-    game.getView().addSpectator(player.getUniqueId());
+    if (!game.getView().addSpectator(player.getUniqueId())) {
+      // The inventory board refuses spectators: it borrows the viewer's own inventory for the
+      // two nearest ranks, which is not a price to charge someone who is not even playing.
+      player.sendMessage(messageConfig.getSpectatingUnavailable());
+    }
   }
 
   public void sendHelp(Player player, String indexString) {

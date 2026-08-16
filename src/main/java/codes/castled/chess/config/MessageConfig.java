@@ -72,6 +72,10 @@ public final class MessageConfig extends Config implements DialogLabels {
     return getColoredString(getChessCommandMessagePath() + "target-not-in-game");
   }
 
+  public String getSpectatingUnavailable() {
+    return getColoredString(getChessCommandMessagePath() + "spectating-unavailable");
+  }
+
   public String getOpponentNotOnline() {
     return getColoredString(getChessCommandMessagePath() + "opponent-not-online");
   }

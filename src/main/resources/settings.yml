@@ -27,6 +27,19 @@ chess-game:
 
 # Dialog board appearance and behaviour.
 ui:
+  # Which board to render.
+  #   auto      - dialog board on Paper, inventory board on Spigot (recommended)
+  #   dialog    - force the Paper dialog board; ignored with a warning where the Dialog API
+  #               is missing, since honouring it would leave players with no board
+  #   inventory - force the Bukkit inventory board, even on Paper
+  # The inventory board covers core chess only: premoves, spectating and focus mode are
+  # dialog-board features. It also borrows the two rows of your inventory nearest the chest to
+  # show the first two ranks, so your items are held aside while a board is open and returned
+  # when it closes.
+  mode: auto
+
+  # These apply to both boards where they make sense. square-button-width, title,
+  # allow-escape-close, show-coordinates and show-captured-pieces are dialog-only.
   dialog:
     # Dialog title (MiniMessage).
     title: '<gold>Chess</gold>'
