@@ -191,8 +191,12 @@ public final class HubNetwork implements ChessNetwork {
 
               socket = opened;
               retrySeconds = MIN_RETRY_SECONDS;
-              sendHello();
               plugin.getLogger().info("Chess network: connected as '" + settings.label() + "'.");
+
+              // This callback runs on the HTTP client's thread, and building the hello reads the
+              // online players, so it hops to the thread that owns them first. Reading Bukkit off
+              // a server thread is unsupported and on Folia it is a genuine race.
+              codes.castled.chess.util.Scheduler.global(plugin, this::sendHello);
             });
   }
 
@@ -218,8 +222,9 @@ public final class HubNetwork implements ChessNetwork {
 
   /**
    * @return everyone on this server right now
-   *     <p>Read on whichever thread calls it; {@link Bukkit#getOnlinePlayers()} is safe to read
-   *     from the main thread, which is where presence changes and the initial hello originate.
+   *     <p>Must be called on a server thread: {@link Bukkit#getOnlinePlayers()} is not safe to
+   *     read from elsewhere. Both callers arrive there — presence changes come from an event, and
+   *     the hello is scheduled onto the global region after the socket opens.
    */
   private Collection<RemotePlayer> localPlayers() {
     List<RemotePlayer> players = new ArrayList<>();
