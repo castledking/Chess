@@ -68,6 +68,10 @@ public final class MessageConfig extends Config implements DialogLabels {
     return getColoredString(getChessCommandMessagePath() + "not-playing");
   }
 
+  public String getOpponentOnAnotherServer() {
+    return getColoredString(getChessCommandMessagePath() + "opponent-on-another-server");
+  }
+
   public String getInvalidDifficulty() {
     return getColoredString(getChessCommandMessagePath() + "invalid-difficulty");
   }

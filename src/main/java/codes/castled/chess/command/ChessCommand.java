@@ -3,6 +3,8 @@ package codes.castled.chess.command;
 import codes.castled.chess.Chess;
 import codes.castled.chess.util.Scheduler;
 import codes.castled.chess.bot.BotDifficulty;
+import codes.castled.chess.net.ChessNetwork;
+import codes.castled.chess.net.RemotePlayer;
 import codes.castled.chess.engine.api.game.TimeMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -21,9 +23,11 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
 
   private final Chess plugin;
   private final ChessCommandHandler handler;
+  private final ChessNetwork network;
 
-  public ChessCommand(Chess plugin, ChessCommandHandler handler) {
+  public ChessCommand(Chess plugin, ChessNetwork network, ChessCommandHandler handler) {
     this.plugin = plugin;
+    this.network = network;
     this.handler = handler;
   }
 
@@ -78,13 +82,31 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
           .mapToObj(String::valueOf)
           .toList();
 
+  /**
+   * @param sender the player completing a command
+   * @return everyone they could name, on this server and on every other server on the network
+   *     <p>Read from the network's local cache, never from the network itself: this runs on the
+   *     main thread for every keystroke, and must not wait on anything.
+   */
+  private List<String> challengeableNames(CommandSender sender) {
+    List<String> names = new ArrayList<>();
+    for (Player online : Bukkit.getOnlinePlayers()) {
+      if (!online.getName().equals(sender.getName())) {
+        names.add(online.getName());
+      }
+    }
+    for (RemotePlayer remote : network.remotePlayers()) {
+      if (!remote.name().equals(sender.getName())) {
+        names.add(remote.name());
+      }
+    }
+    return names;
+  }
+
   @Override
   public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-    List<String> otherPlayerNames =
-        Bukkit.getOnlinePlayers().stream()
-            .map(Player::getName)
-            .filter(name -> !name.equals(sender.getName()))
-            .toList();
+    List<String> otherPlayerNames = challengeableNames(sender);
+
     if (args.length == 1) {
       return StringUtil.copyPartialMatches(
           args[0],

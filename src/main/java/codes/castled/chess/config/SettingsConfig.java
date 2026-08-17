@@ -2,6 +2,7 @@ package codes.castled.chess.config;
 
 import codes.castled.chess.Chess;
 import codes.castled.chess.game.ChessGameEvent;
+import codes.castled.chess.net.HubNetwork;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
@@ -53,6 +54,15 @@ public final class SettingsConfig extends Config {
    */
   public boolean isVerticalCastlingEnabled() {
     return config.getBoolean("easter-egg.enable-vertical-castling", false);
+  }
+
+  /** @return how this server links to the cross-server hub */
+  public HubNetwork.NetworkSettings getNetworkSettings() {
+    return new HubNetwork.NetworkSettings(
+        config.getBoolean("network.enabled", false),
+        config.getString("network.url", ""),
+        config.getString("network.token", ""),
+        config.getString("network.server-id", ""));
   }
 
   /** @return whether the plugin should manage (send/merge) its resource pack at all */

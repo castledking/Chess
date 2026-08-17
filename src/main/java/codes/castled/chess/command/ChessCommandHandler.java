@@ -5,6 +5,7 @@ import codes.castled.chess.game.ChessGameHolder;
 import codes.castled.chess.game.GameService;
 import codes.castled.chess.request.DuelRequestService;
 import codes.castled.chess.bot.BotDifficulty;
+import codes.castled.chess.net.ChessNetwork;
 import codes.castled.chess.engine.api.game.TimeMode;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,14 +17,17 @@ public final class ChessCommandHandler {
   private final MessageConfig messageConfig;
   private final GameService gameService;
   private final DuelRequestService duelRequestService;
+  private final ChessNetwork network;
 
   public ChessCommandHandler(
       MessageConfig messageConfig,
       GameService gameService,
-      DuelRequestService duelRequestService) {
+      DuelRequestService duelRequestService,
+      ChessNetwork network) {
     this.messageConfig = messageConfig;
     this.gameService = gameService;
     this.duelRequestService = duelRequestService;
+    this.network = network;
   }
 
   /** Reopens the board if the player is in a game. */
@@ -76,6 +80,10 @@ public final class ChessCommandHandler {
       } else {
         player.sendMessage(messageConfig.getInvalidTimeMode());
       }
+    } else if (network.findRemotePlayer(requestName) != null) {
+      // They are on the network but not on this server. Playing across servers is not wired up
+      // yet, so say what is actually true rather than claiming they are offline.
+      player.sendMessage(messageConfig.getOpponentOnAnotherServer());
     } else {
       player.sendMessage(messageConfig.getOpponentNotOnline());
     }

@@ -17,10 +17,12 @@ import java.util.function.Function;
  * chessground/lichess standard. Unlike normal move generation, premove validation:
  *
  * <ul>
+ *   <li>Allows premoving onto your own pieces (self-capture), since the opponent's move can
+ *       displace them.
  *   <li>Allows pawn diagonal captures even when no enemy piece is on the target square
  *       (the opponent might move a piece there before the premove fires).
- *   <li>Does not block sliding pieces (bishop, rook, queen) on opponent pieces — only
- *       own pieces block the path, since opponent pieces may move away.
+ *   <li>Does not block sliding pieces (bishop, rook, queen) on any pieces — only board
+ *       edges stop the slide, since pieces may move away.
  *   <li>Offers castling on rights alone, without checking that the path is clear or that the
  *       king would pass through check — the opponent's single move can change either.
  *   <li>Does not validate check or en passant — those are enforced at play time by the
@@ -126,22 +128,20 @@ public final class PremoveMoveCalculator {
     }
   }
 
-  /** Knight: all 8 L-shaped jumps, blocked only by own pieces. */
+  /** Knight: all 8 L-shaped jumps. No blocking — own pieces may be captured. */
   private static void addKnightMoves(
       ChessBoard board, Square from, PieceColor color, List<Square> moves) {
     int[][] offsets = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
     for (int[] off : offsets) {
       Square dest = SquareUtils.offsetOrNull(from, off[0], off[1]);
       if (dest == null) continue;
-      Piece occupant = board.getPiece(dest);
-      if (occupant != null && occupant.color() == color) continue;
       moves.add(dest);
     }
   }
 
   /**
-   * Sliding pieces: slide in each direction, stopping at own pieces. Opponent pieces
-   * are transparent (they might move away before the premove fires).
+   * Sliding pieces: slide in each direction, stopping only at board edges.
+   * Own pieces may be captured — the opponent's move can displace them.
    */
   private static void addSlidingMoves(
       ChessBoard board,
@@ -163,23 +163,19 @@ public final class PremoveMoveCalculator {
       while (true) {
         Square next = SquareUtils.offsetOrNull(current, dir[0], dir[1]);
         if (next == null) break;
-        Piece occupant = board.getPiece(next);
-        if (occupant != null && occupant.color() == color) break;
         moves.add(next);
         current = next;
       }
     }
   }
 
-  /** King: all 8 adjacent squares, blocked only by own pieces. Castling is added separately. */
+  /** King: all 8 adjacent squares. No blocking — own pieces may be captured. Castling is added separately. */
   private static void addKingMoves(
       ChessBoard board, Square from, PieceColor color, List<Square> moves) {
     int[][] offsets = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
     for (int[] off : offsets) {
       Square dest = SquareUtils.offsetOrNull(from, off[0], off[1]);
       if (dest == null) continue;
-      Piece occupant = board.getPiece(dest);
-      if (occupant != null && occupant.color() == color) continue;
       moves.add(dest);
     }
   }

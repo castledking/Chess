@@ -76,6 +76,17 @@ resource-pack:
   # automatically. Leave blank to send nothing directly.
   url: ''
 
+# Cross-server play. Servers link out to a hub, so they need no shared proxy and no inbound
+# port — only the ability to reach the hub's address.
+network:
+  enabled: false
+  # The hub's base URL. Use wss:// in production; ws:// is cleartext.
+  url: 'wss://castled.codes'
+  # This server's identity on the network. Must be unique across your servers.
+  server-id: 'changeme'
+  # Shared secret issued by the hub. Treat it like a password.
+  token: ''
+
 # Easter eggs. Off by default; these are not standard chess rules.
 easter-egg:
   # Vertical castling (the Pam-Krabbe castling). When a pawn promotes to a rook on the king's

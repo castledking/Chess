@@ -27,6 +27,12 @@ dependencies {
     // now that Guice is gone.
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 
+    // Compile-only: Gson is bundled inside every Spigot and Paper server jar (Mojang's own code
+    // and the BungeeCord chat API both use it), so it resolves at runtime without being shipped.
+    // Used for the cross-server hub protocol. The WebSocket client itself is java.net.http, which
+    // is part of the JDK, so the network layer adds nothing to the jar.
+    compileOnly("com.google.code.gson:gson:2.10.1")
+
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
 

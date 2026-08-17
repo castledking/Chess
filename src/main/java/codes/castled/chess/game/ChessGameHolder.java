@@ -526,10 +526,9 @@ public final class ChessGameHolder {
 
   /**
    * Computes pseudo-legal destination squares for a piece at {@code from} based on the
-   * simulated board after the premove chain. Own pieces block; opponent pieces are
-   * capturable; no check or en-passant validation. Castling is offered on rights alone,
-   * looked up against the simulated position so a rook already premoved away stops offering
-   * it.
+   * simulated board after the premove chain. Own pieces may be captured (self-capture);
+   * no check or en-passant validation. Castling is offered on rights alone, looked up
+   * against the simulated position so a rook already premoved away stops offering it.
    */
   public static List<Square> pseudoLegalMoves(
       ChessGame game,
@@ -548,8 +547,7 @@ public final class ChessGameHolder {
         for (int[] o : offsets) {
           Square d = SquareUtils.offsetOrNull(from, o[0], o[1]);
           if (d != null) {
-            Piece occ = sim.get(d);
-            if (occ == null || occ.color() != color) moves.add(d);
+            moves.add(d);
           }
         }
       }
@@ -561,8 +559,7 @@ public final class ChessGameHolder {
         for (int[] o : offsets) {
           Square d = SquareUtils.offsetOrNull(from, o[0], o[1]);
           if (d != null) {
-            Piece occ = sim.get(d);
-            if (occ == null || occ.color() != color) moves.add(d);
+            moves.add(d);
           }
         }
         PremoveMoveCalculator.addCastlingMoves(
@@ -574,23 +571,23 @@ public final class ChessGameHolder {
         int promRow = color == PieceColor.WHITE ? 7 : 0;
         int r = from.getRowIndex();
         int c = from.getColumnIndex();
-        // Forward one — only own pieces block (opponent pieces may move away before premove fires)
+        // Forward one — must be empty (pawns cannot capture forward)
         Square fwd1 = SquareUtils.offsetOrNull(from, dir, 0);
         if (fwd1 != null) {
           Piece fwd1Piece = sim.get(fwd1);
-          if ((fwd1Piece == null || fwd1Piece.color() != color) && fwd1.getRowIndex() != promRow) {
+          if (fwd1Piece == null && fwd1.getRowIndex() != promRow) {
             moves.add(fwd1);
             // Forward two from start
             if (r == startRow) {
               Square fwd2 = SquareUtils.offsetOrNull(from, dir * 2, 0);
               if (fwd2 != null) {
                 Piece fwd2Piece = sim.get(fwd2);
-                if (fwd2Piece == null || fwd2Piece.color() != color) moves.add(fwd2);
+                if (fwd2Piece == null) moves.add(fwd2);
               }
             }
           }
         }
-        // Diagonals (always allowed for premove — opponent might move a piece there)
+        // Diagonals (always allowed for premove — own pieces may be captured)
         for (int dc : new int[]{-1, 1}) {
           Square diag = SquareUtils.offsetOrNull(from, dir, dc);
           if (diag != null && diag.getRowIndex() != promRow) {
@@ -617,13 +614,7 @@ public final class ChessGameHolder {
       for (int i = 1; i < 8; i++) {
         Square sq = SquareUtils.offsetOrNull(from, d[0] * i, d[1] * i);
         if (sq == null) break;
-        Piece occ = sim.get(sq);
-        if (occ == null) {
-          moves.add(sq);
-        } else {
-          if (occ.color() != color) moves.add(sq);
-          break;
-        }
+        moves.add(sq);
       }
     }
   }
