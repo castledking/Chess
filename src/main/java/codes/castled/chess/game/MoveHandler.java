@@ -204,6 +204,9 @@ public final class MoveHandler {
     // below still renders the position the player is waiting on.
     holder.playBotMoveIfDue();
 
+    // The turn and both clocks have settled, so this is the moment worth publishing.
+    holder.publishToNetwork();
+
     view.clearTimeHighlight(chessGame.getCurrentTurn());
     view.cancelInfoTasks();
     view.resetInfo();

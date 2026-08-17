@@ -49,7 +49,8 @@ public final class Chess extends JavaPlugin {
             settings,
             sound,
             viewFactory,
-            engine);
+            engine,
+            network);
     DuelRequestService duelRequestService = new DuelRequestService(this, gameService, messages, settings);
     ResourcePackService resourcePackService = new ResourcePackService(this, settings);
 
@@ -64,6 +65,17 @@ public final class Chess extends JavaPlugin {
     // inventory with our holder, so every event falls straight through.
     Bukkit.getPluginManager().registerEvents(new InventoryBoardListener(gameService), this);
     Bukkit.getPluginManager().registerEvents(new NetworkPresenceListener(network), this);
+
+    // A web challenge is announced but not yet turned into a duel request: accepting one needs a
+    // board on the web for the challenger to actually play on, which does not exist yet. Raising
+    // a request that cannot be honoured would be worse than saying so.
+    network.setWebChallengeListener(
+        (target, challenger, timeMode) -> {
+          org.bukkit.entity.Player player = Bukkit.getPlayer(target);
+          if (player != null) {
+            player.sendMessage(messages.getWebChallengeReceived(challenger));
+          }
+        });
 
     // Extract the bundled pack and hand it to ResourcePackManager when installed.
     resourcePackService.setup();

@@ -22,6 +22,8 @@ import codes.castled.chess.util.Scheduler;
 import javax.annotation.Nullable;
 import codes.castled.chess.bot.ChessBot;
 import codes.castled.chess.chat.InviteBroadcaster;
+import codes.castled.chess.net.ChessNetwork;
+import codes.castled.chess.net.GameSummary;
 import codes.castled.chess.chat.WatchInvite;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -68,6 +70,7 @@ public final class ChessGameHolder {
 
   /** Renders the watch broadcast with whichever chat library the server has. */
   private final InviteBroadcaster inviteBroadcaster = InviteBroadcaster.forPlatform();
+  private final ChessNetwork network;
 
   /** Guards against dispatching a second search while one is already running. */
   private boolean botThinking;
@@ -82,8 +85,10 @@ public final class ChessGameHolder {
       MessageConfig messageConfig,
       SettingsConfig settingsConfig,
       SoundPlayer soundPlayer,
-      ChessViewFactory viewFactory) {
+      ChessViewFactory viewFactory,
+      ChessNetwork network) {
     this.plugin = plugin;
+    this.network = network;
     this.gameService = gameService;
     this.chessGame = chessGame;
     this.chessBoard = chessGame.getChessBoard();
@@ -106,6 +111,7 @@ public final class ChessGameHolder {
     gameClock.start();
     sendGameMessage(messageConfig.getGameStarted());
     broadcastWatchGame(whitePlayerId, blackPlayerId);
+    publishToNetwork();
   }
 
   private void broadcastWatchGame(UUID whiteId, UUID blackId) {
@@ -123,6 +129,24 @@ public final class ChessGameHolder {
             "Click to spectate this game"),
         whiteId,
         blackId);
+  }
+
+  /**
+   * Tells the network what this game looks like now.
+   *
+   * <p>Called when the game starts and after each move rather than on every clock tick: the frame
+   * carries both clocks and whose turn it is, which is enough for a watcher to count the moving
+   * side down themselves.
+   */
+  public void publishToNetwork() {
+    network.publishGame(
+        new GameSummary(
+            chessGame.getGameId(),
+            displayName(chessGame.getWhitePlayerId(), "White"),
+            displayName(chessGame.getBlackPlayerId(), "Black"),
+            chessGame.getTimeLeftMillis(chessGame.getWhitePlayerId()),
+            chessGame.getTimeLeftMillis(chessGame.getBlackPlayerId()),
+            chessGame.getCurrentTurn().equals(chessGame.getWhitePlayerId())));
   }
 
   /**
@@ -438,6 +462,7 @@ public final class ChessGameHolder {
 
   /** Ends the game and cleans up the view and clock. */
   public void endGame(UUID winnerId) {
+    network.publishGameEnded(chessGame.getGameId());
     chessGame.endGame(winnerId);
     gameService.removeGame(chessGame.getGameId());
     // Show the final position, then stop tracking viewers.

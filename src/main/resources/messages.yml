@@ -14,6 +14,8 @@ messages:
     spectating-unavailable: '&cSpectating is not available on this server''s chess board.'
     # Shown when the named player is on another server on the network rather than this one.
     opponent-on-another-server: '&cThat player is on another server. Cross-server duels are not available yet.'
+    # [challenger] is the name chosen on the castled.codes dashboard.
+    web-challenge-received: '&e[challenger] &7challenged you from the web. Web play is coming soon.'
     invalid-difficulty: '&cPick a computer difficulty from 1 to 10.'
     invalid-time-mode: '&cThis time mode is invalid. Please select one from the shown time modes.'
     already-requested-duel: '&cYou have already sent a duel request to this player. Wait for them to accept or decline.'

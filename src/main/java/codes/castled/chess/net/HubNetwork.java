@@ -50,6 +50,7 @@ public final class HubNetwork implements ChessNetwork {
   private final AtomicBoolean running = new AtomicBoolean();
   private volatile WebSocket socket;
   private volatile long retrySeconds = MIN_RETRY_SECONDS;
+  private volatile WebChallengeListener challengeListener;
 
   /** Frames can arrive split across several callbacks, so text is accumulated until complete. */
   private final StringBuilder incoming = new StringBuilder();
@@ -98,6 +99,40 @@ public final class HubNetwork implements ChessNetwork {
       }
     }
     return null;
+  }
+
+  @Override
+  public void setWebChallengeListener(WebChallengeListener listener) {
+    this.challengeListener = listener;
+  }
+
+  @Override
+  public void publishGame(GameSummary game) {
+    if (!isConnected()) {
+      return;
+    }
+
+    JsonObject frame = new JsonObject();
+    frame.addProperty(HubProtocol.TYPE, HubProtocol.GAME);
+    frame.addProperty("gameId", game.gameId().toString());
+    frame.addProperty("white", game.white());
+    frame.addProperty("black", game.black());
+    frame.addProperty("whiteMillis", game.whiteMillis());
+    frame.addProperty("blackMillis", game.blackMillis());
+    frame.addProperty("turn", game.whiteToMove() ? "white" : "black");
+    send(frame);
+  }
+
+  @Override
+  public void publishGameEnded(UUID gameId) {
+    if (!isConnected()) {
+      return;
+    }
+
+    JsonObject frame = new JsonObject();
+    frame.addProperty(HubProtocol.TYPE, HubProtocol.GAME_ENDED);
+    frame.addProperty("gameId", gameId.toString());
+    send(frame);
   }
 
   @Override
@@ -220,6 +255,7 @@ public final class HubNetwork implements ChessNetwork {
 
     switch (type) {
       case HubProtocol.ROSTER -> applyRoster(frame);
+      case HubProtocol.WEB_CHALLENGE -> handleWebChallenge(frame);
       case HubProtocol.REJECTED -> {
         String reason = frame.has("reason") ? frame.get("reason").getAsString() : "no reason given";
         plugin.getLogger().warning("Chess network: the hub refused this server (" + reason + ").");
@@ -227,6 +263,32 @@ public final class HubNetwork implements ChessNetwork {
       }
       default -> plugin.getLogger().fine("Chess network: ignoring unknown frame '" + type + "'.");
     }
+  }
+
+  /**
+   * Hands a web challenge to the listener, on the thread that owns the game state.
+   *
+   * <p>Frames arrive on the HTTP client's threads, so this hops to the global region before
+   * touching anything the server owns.
+   */
+  private void handleWebChallenge(JsonObject frame) {
+    WebChallengeListener listener = challengeListener;
+    if (listener == null || !frame.has("uuid")) {
+      return;
+    }
+
+    UUID target;
+    try {
+      target = UUID.fromString(frame.get("uuid").getAsString());
+    } catch (IllegalArgumentException exception) {
+      return;
+    }
+
+    String challenger = frame.has("challenger") ? frame.get("challenger").getAsString() : "castled.codes";
+    String timeMode = frame.has("timeMode") ? frame.get("timeMode").getAsString() : "TEN";
+
+    codes.castled.chess.util.Scheduler.global(
+        plugin, () -> listener.onWebChallenge(target, challenger, timeMode));
   }
 
   /** Replaces the roster wholesale, which is why a missed frame cannot leave it stale. */

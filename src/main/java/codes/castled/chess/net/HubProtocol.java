@@ -30,7 +30,10 @@ public final class HubProtocol {
 
   public static final String HELLO = "HELLO";
   public static final String PRESENCE = "PRESENCE";
+  public static final String GAME = "GAME";
+  public static final String GAME_ENDED = "GAME_ENDED";
   public static final String ROSTER = "ROSTER";
+  public static final String WEB_CHALLENGE = "WEB_CHALLENGE";
   public static final String REJECTED = "REJECTED";
 
   /** Field naming the message type on every frame. */

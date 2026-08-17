@@ -72,6 +72,15 @@ public final class MessageConfig extends Config implements DialogLabels {
     return getColoredString(getChessCommandMessagePath() + "opponent-on-another-server");
   }
 
+  /**
+   * @param challenger the name chosen on the dashboard
+   * @return the notice shown to a player challenged from the web
+   */
+  public String getWebChallengeReceived(String challenger) {
+    return getColoredString(getChessCommandMessagePath() + "web-challenge-received")
+        .replace("[challenger]", challenger);
+  }
+
   public String getInvalidDifficulty() {
     return getColoredString(getChessCommandMessagePath() + "invalid-difficulty");
   }

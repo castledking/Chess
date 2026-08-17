@@ -41,6 +41,31 @@ public interface ChessNetwork {
   RemotePlayer findRemotePlayer(String name);
 
   /**
+   * Sets who is told when the web challenges a player here. Replaces any previous listener.
+   *
+   * @param listener the listener, called on the global region thread
+   */
+  void setWebChallengeListener(WebChallengeListener listener);
+
+  /**
+   * Tells the network about a game running here, so it can be shown elsewhere.
+   *
+   * <p>Sent when a game starts and after every move, not on every clock tick. The frame carries
+   * both clocks and whose turn it is, which is enough for a viewer to count the moving side down
+   * itself — publishing every second per game would be far more traffic for the same picture.
+   *
+   * @param game the game to describe
+   */
+  void publishGame(GameSummary game);
+
+  /**
+   * Tells the network a game has finished.
+   *
+   * @param gameId the game that ended
+   */
+  void publishGameEnded(UUID gameId);
+
+  /**
    * Tells the network who is now on this server.
    *
    * @param joined players who have just joined

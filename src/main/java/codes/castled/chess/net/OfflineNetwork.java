@@ -38,5 +38,14 @@ public final class OfflineNetwork implements ChessNetwork {
   }
 
   @Override
+  public void setWebChallengeListener(WebChallengeListener listener) {}
+
+  @Override
+  public void publishGame(GameSummary game) {}
+
+  @Override
+  public void publishGameEnded(UUID gameId) {}
+
+  @Override
   public void publishPresence(Collection<RemotePlayer> joined, Collection<UUID> left) {}
 }

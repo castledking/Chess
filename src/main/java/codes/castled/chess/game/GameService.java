@@ -6,6 +6,7 @@ import codes.castled.chess.config.SettingsConfig;
 import codes.castled.chess.bot.BotDifficulty;
 import codes.castled.chess.bot.ChessBot;
 import codes.castled.chess.bot.SearchBot;
+import codes.castled.chess.net.ChessNetwork;
 import codes.castled.chess.ui.ChessViewFactory;
 import codes.castled.chess.wiring.EngineFactory;
 
@@ -39,6 +40,7 @@ public final class GameService {
   private final SoundPlayer soundPlayer;
   private final ChessViewFactory viewFactory;
   private final EngineFactory engineFactory;
+  private final ChessNetwork network;
 
   /**
    * The engine opponents currently playing, keyed by the id each plays under. A bot stands in for
@@ -54,8 +56,10 @@ public final class GameService {
       SettingsConfig settingsConfig,
       SoundPlayer soundPlayer,
       ChessViewFactory viewFactory,
-      EngineFactory engineFactory) {
+      EngineFactory engineFactory,
+      ChessNetwork network) {
     this.engineFactory = engineFactory;
+    this.network = network;
     this.plugin = plugin;
     this.chessService = chessService;
     this.moveCalculator = moveCalculator;
@@ -94,7 +98,8 @@ public final class GameService {
               messageConfig,
               settingsConfig,
               soundPlayer,
-              viewFactory));
+              viewFactory,
+              network));
     }
     return result;
   }
@@ -139,7 +144,8 @@ public final class GameService {
             messageConfig,
             settingsConfig,
             soundPlayer,
-            viewFactory));
+            viewFactory,
+            network));
     return result;
   }
 
