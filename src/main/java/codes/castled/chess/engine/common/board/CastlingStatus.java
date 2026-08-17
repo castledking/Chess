@@ -56,6 +56,16 @@ public final class CastlingStatus {
   }
 
   /**
+   * Withdraws every rook right for a colour, so a loaded position can grant exactly the rights
+   * its FEN declares rather than inheriting whatever the board happens to look like.
+   *
+   * @param color the colour to clear
+   */
+  public void withdrawAllRookRights(PieceColor color) {
+    unmovedRooks.get(color).clear();
+  }
+
+  /**
    * @param color the colour of the rooks
    * @return the squares of that colour's rooks that have never moved
    */

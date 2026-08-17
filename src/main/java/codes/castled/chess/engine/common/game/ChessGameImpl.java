@@ -11,6 +11,7 @@ import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.move.MoveResult;
 import codes.castled.chess.engine.common.board.CastlingStatus;
 import codes.castled.chess.engine.common.board.FenCodec;
+import codes.castled.chess.engine.common.board.FenPosition;
 import codes.castled.chess.engine.common.board.ChessBoardImpl;
 import codes.castled.chess.engine.common.move.MoveValidator;
 import codes.castled.chess.engine.common.move.SpecialMoveHandler;
@@ -59,6 +60,11 @@ public final class ChessGameImpl implements ChessGame {
    */
   private String lastPositionKey;
 
+  /** Stand-in ids for a loaded position, which belongs to no real players. */
+  private static final UUID ANALYSIS_WHITE = new UUID(0L, 1L);
+
+  private static final UUID ANALYSIS_BLACK = new UUID(0L, 2L);
+
   public ChessGameImpl(
       ChessGameServiceImpl chessService,
       TimeMode timeMode,
@@ -90,6 +96,86 @@ public final class ChessGameImpl implements ChessGame {
     capturedPieces = Map.of(whitePlayerId, new ArrayList<>(), blackPlayerId, new ArrayList<>());
 
     recordPosition(currentTurn);
+  }
+
+  /**
+   * Builds a game holding an arbitrary position, for a bot or an analysis tool to reason about
+   * without touching a live game.
+   *
+   * <p>This is what makes a bot safe to run off the server threads: it is handed a FEN snapshot
+   * and works on its own copy, so the real board can never be read while it is being mutated.
+   *
+   * @param position the parsed FEN to load
+   * @param moveCalculator the move calculator to use
+   * @param moveValidator the move validator to use
+   * @return a game positioned as the FEN describes, with synthetic player ids
+   */
+  public static ChessGameImpl fromPosition(
+      FenPosition position, MoveCalculator moveCalculator, MoveValidator moveValidator) {
+
+    ChessGameImpl game =
+        new ChessGameImpl(
+            null,
+            TimeMode.TEN,
+            new ChessBoardImpl(position.board()),
+            ANALYSIS_WHITE,
+            ANALYSIS_BLACK,
+            moveCalculator,
+            moveValidator);
+
+    game.currentTurn = position.turn();
+    game.halfmoveClock = position.halfmoveClock();
+    game.fullmoveNumber = position.fullmoveNumber();
+    game.applyCastlingRights(position);
+    game.applyEnPassantTarget(position);
+
+    return game;
+  }
+
+  /**
+   * Grants exactly the castling rights the FEN declares. The constructor marks every rook on the
+   * board as unmoved, which is right for a new game but wrong for a loaded one.
+   */
+  private void applyCastlingRights(FenPosition position) {
+    for (PieceColor color : PieceColor.values()) {
+      castlingStatus.withdrawAllRookRights(color);
+
+      char homeRow = color == PieceColor.WHITE ? '1' : '8';
+      boolean kingSide = position.hasCastlingRight(color, true);
+      boolean queenSide = position.hasCastlingRight(color, false);
+
+      if (kingSide) {
+        castlingStatus.markRookUnmoved(color, new Square(homeRow, 'H'));
+      }
+      if (queenSide) {
+        castlingStatus.markRookUnmoved(color, new Square(homeRow, 'A'));
+      }
+      if (!kingSide && !queenSide) {
+        castlingStatus.markKingMoved(color);
+      }
+    }
+  }
+
+  /**
+   * Recreates the pawn advance that produced the FEN's en passant target, because this engine
+   * derives en passant from the last move rather than storing the target square.
+   */
+  private void applyEnPassantTarget(FenPosition position) {
+    Square target = position.enPassantTarget();
+    if (target == null) {
+      return;
+    }
+
+    // A target on rank 3 means white has just played a double advance; on rank 6, black has.
+    boolean white = target.row() == '3';
+    char fromRow = white ? '2' : '7';
+    char toRow = white ? '4' : '5';
+    Square to = new Square(toRow, target.column());
+
+    Piece pawn = chessBoard.getPiece(to);
+    if (pawn != null && pawn.type() == PieceType.PAWN) {
+      chessBoard.setLastPlayedMove(new Move(pawn, new Square(fromRow, target.column()), to));
+    }
   }
 
   @Override

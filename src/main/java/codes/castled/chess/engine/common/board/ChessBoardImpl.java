@@ -28,6 +28,19 @@ public final class ChessBoardImpl implements ChessBoard {
   }
 
   /**
+   * Creates a board holding an arbitrary position, for analysis rather than a new game.
+   *
+   * @param pieces the pieces, indexed as {@code [columnIndex][rowIndex]}; copied, so the caller
+   *     may keep using its array
+   */
+  public ChessBoardImpl(Piece[][] pieces) {
+    this.chessBoard = new Piece[8][8];
+    for (int column = 0; column < 8; column++) {
+      System.arraycopy(pieces[column], 0, chessBoard[column], 0, 8);
+    }
+  }
+
+  /**
    * Runs the move logic on the chess board.
    *
    * @param move the move that was played

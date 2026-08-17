@@ -6,6 +6,8 @@ import codes.castled.chess.engine.api.game.ChessGame;
 import codes.castled.chess.engine.api.game.ChessGameService;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.piece.PieceColor;
+import codes.castled.chess.engine.common.board.FenCodec;
+import codes.castled.chess.engine.common.game.ChessGameImpl;
 import codes.castled.chess.engine.common.game.ChessGameServiceImpl;
 import codes.castled.chess.engine.common.move.MoveCalculatorImpl;
 import codes.castled.chess.engine.common.move.MoveValidator;
@@ -32,6 +34,7 @@ public final class EngineFactory {
 
   private final MoveCalculator moveCalculator;
   private final ChessGameService chessGameService;
+  private final MoveValidator validator;
 
   /**
    * @param verticalCastling whether the vertical castling easter egg is enabled
@@ -52,7 +55,21 @@ public final class EngineFactory {
     lazy.delegate = calculator;
 
     this.moveCalculator = calculator;
+    this.validator = validator;
     this.chessGameService = new ChessGameServiceImpl(calculator, validator);
+  }
+
+  /**
+   * Loads an arbitrary position for analysis, without registering a game.
+   *
+   * <p>Used to hand a bot an immutable snapshot of a position so it can reason off the server
+   * threads while the real board carries on being mutated.
+   *
+   * @param fen the position to load
+   * @return a game holding that position
+   */
+  public ChessGame positionFromFen(String fen) {
+    return ChessGameImpl.fromPosition(FenCodec.parse(fen), moveCalculator, validator);
   }
 
   public MoveCalculator moveCalculator() {
