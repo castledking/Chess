@@ -56,13 +56,45 @@ public final class SettingsConfig extends Config {
     return config.getBoolean("easter-egg.enable-vertical-castling", false);
   }
 
-  /** @return how this server links to the cross-server hub */
+  /**
+   * @return how this server links to the cross-server hub
+   *     <p>There is nothing to fill in. The server's identity is a key generated on first use and
+   *     written back to settings.yml, so an operator only ever chooses whether the feature is on.
+   */
   public HubNetwork.NetworkSettings getNetworkSettings() {
     return new HubNetwork.NetworkSettings(
-        config.getBoolean("network.enabled", false),
-        config.getString("network.url", ""),
-        config.getString("network.token", ""),
-        config.getString("network.server-id", ""));
+        config.getBoolean("network.enabled", true),
+        config.getString("network.url", "wss://castled.codes"),
+        getOrCreateServerKey(),
+        getServerLabel());
+  }
+
+  /**
+   * @return this server's identity on the network, generating and saving one the first time
+   *     <p>The key is this server as far as the hub is concerned, so it is generated locally and
+   *     never leaves except to the hub. Persisting it means a restart rejoins as the same server
+   *     rather than appearing as a new one.
+   */
+  private String getOrCreateServerKey() {
+    String existing = config.getString("network.server-key", "");
+    if (existing != null && !existing.isBlank()) {
+      return existing;
+    }
+
+    String generated = java.util.UUID.randomUUID().toString();
+    config.set("network.server-key", generated);
+    save();
+    return generated;
+  }
+
+  /** @return the name shown for this server, falling back to something recognisable */
+  private String getServerLabel() {
+    String configured = config.getString("network.server-name", "");
+    if (configured != null && !configured.isBlank()) {
+      return configured;
+    }
+    String motd = org.bukkit.Bukkit.getMotd();
+    return motd == null || motd.isBlank() ? "Server" : motd.replaceAll("§.", "").trim();
   }
 
   /** @return whether the plugin should manage (send/merge) its resource pack at all */

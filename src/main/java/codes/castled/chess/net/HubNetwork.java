@@ -15,7 +15,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
@@ -109,7 +108,6 @@ public final class HubNetwork implements ChessNetwork {
 
     JsonObject frame = new JsonObject();
     frame.addProperty(HubProtocol.TYPE, HubProtocol.PRESENCE);
-    frame.addProperty("serverId", settings.serverId());
     frame.add("joined", playersArray(joined));
 
     JsonArray leftArray = new JsonArray();
@@ -126,7 +124,7 @@ public final class HubNetwork implements ChessNetwork {
       return;
     }
 
-    URI uri = URI.create(settings.hubUrl() + HubProtocol.PATH + "?token=" + settings.token());
+    URI uri = URI.create(settings.hubUrl() + HubProtocol.PATH + "?key=" + settings.serverKey());
 
     HttpClient.newBuilder()
         .connectTimeout(CONNECT_TIMEOUT)
@@ -152,7 +150,7 @@ public final class HubNetwork implements ChessNetwork {
               socket = opened;
               retrySeconds = MIN_RETRY_SECONDS;
               sendHello();
-              plugin.getLogger().info("Chess network: connected as server '" + settings.serverId() + "'.");
+              plugin.getLogger().info("Chess network: connected as '" + settings.label() + "'.");
             });
   }
 
@@ -171,7 +169,7 @@ public final class HubNetwork implements ChessNetwork {
   private void sendHello() {
     JsonObject frame = new JsonObject();
     frame.addProperty(HubProtocol.TYPE, HubProtocol.HELLO);
-    frame.addProperty("serverId", settings.serverId());
+    frame.addProperty("label", settings.label());
     frame.add("players", playersArray(localPlayers()));
     send(frame);
   }
@@ -184,7 +182,7 @@ public final class HubNetwork implements ChessNetwork {
   private Collection<RemotePlayer> localPlayers() {
     List<RemotePlayer> players = new ArrayList<>();
     for (Player player : Bukkit.getOnlinePlayers()) {
-      players.add(new RemotePlayer(player.getUniqueId(), player.getName(), settings.serverId()));
+      players.add(new RemotePlayer(player.getUniqueId(), player.getName(), settings.label()));
     }
     return players;
   }
@@ -241,12 +239,13 @@ public final class HubNetwork implements ChessNetwork {
         String serverId = entry.get("serverId").getAsString();
 
         // The hub echoes every server; skip our own so local players are never listed as remote.
-        if (serverId.equalsIgnoreCase(settings.serverId())) {
+        if (serverId.equalsIgnoreCase(settings.serverKey())) {
           continue;
         }
 
         UUID uuid = UUID.fromString(entry.get("uuid").getAsString());
-        replacement.put(uuid, new RemotePlayer(uuid, entry.get("name").getAsString(), serverId));
+        String label = entry.has("server") ? entry.get("server").getAsString() : serverId;
+        replacement.put(uuid, new RemotePlayer(uuid, entry.get("name").getAsString(), label));
       }
     }
 
@@ -309,21 +308,22 @@ public final class HubNetwork implements ChessNetwork {
     }
   }
 
-  /** Settings the hub link needs, read from settings.yml. */
-  public record NetworkSettings(boolean enabled, String hubUrl, String token, String serverId) {
+  /**
+   * Settings the hub link needs.
+   *
+   * @param enabled whether cross-server play is switched on
+   * @param hubUrl the hub's base URL
+   * @param serverKey this server's identity, generated on first start and kept in the plugin's
+   *     data folder. It is a secret: whoever holds it is this server as far as the hub is
+   *     concerned.
+   * @param label a human-readable server name, shown to players and on the dashboard. Never used
+   *     for identity, so two servers sharing a label is untidy rather than unsafe.
+   */
+  public record NetworkSettings(boolean enabled, String hubUrl, String serverKey, String label) {
 
-    /** @return whether the settings are complete enough to attempt a connection */
+    /** @return whether the link can be attempted */
     public boolean usable() {
-      return enabled
-          && !hubUrl.isBlank()
-          && !token.isBlank()
-          && !serverId.isBlank()
-          && !serverId.equalsIgnoreCase("changeme");
-    }
-
-    /** @return the server id, lower-cased, since the hub matches them case-insensitively */
-    public String serverId() {
-      return serverId.toLowerCase(Locale.ROOT);
+      return enabled && !hubUrl.isBlank() && !serverKey.isBlank();
     }
   }
 }

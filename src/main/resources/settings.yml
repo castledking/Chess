@@ -77,15 +77,19 @@ resource-pack:
   url: ''
 
 # Cross-server play. Servers link out to a hub, so they need no shared proxy and no inbound
-# port — only the ability to reach the hub's address.
+# port — only the ability to reach the hub's address. Nothing here needs filling in: this
+# server's identity is generated on first start and written back below.
+#
+# While this is on, the names of players who are online here are sent to the hub so players on
+# other servers can see and challenge them. Set enabled to false to take no part.
 network:
-  enabled: false
-  # The hub's base URL. Use wss:// in production; ws:// is cleartext.
+  enabled: true
   url: 'wss://castled.codes'
-  # This server's identity on the network. Must be unique across your servers.
-  server-id: 'changeme'
-  # Shared secret issued by the hub. Treat it like a password.
-  token: ''
+  # Shown to other players. Defaults to this server's MOTD.
+  server-name: ''
+  # Generated automatically on first start. Treat it like a password: whoever has it is this
+  # server as far as the hub is concerned. Delete it to appear as a brand new server.
+  server-key: ''
 
 # Easter eggs. Off by default; these are not standard chess rules.
 easter-egg:

@@ -27,9 +27,7 @@ public final class NetworkFactory {
     if (!settings.usable()) {
       plugin
           .getLogger()
-          .warning(
-              "Chess network is enabled but not configured: set network.url, network.token and a "
-                  + "unique network.server-id in settings.yml. Cross-server play stays off.");
+          .warning("Chess network: network.url is empty in settings.yml; cross-server play stays off.");
       return new OfflineNetwork();
     }
 
