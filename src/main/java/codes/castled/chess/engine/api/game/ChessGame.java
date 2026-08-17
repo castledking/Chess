@@ -118,6 +118,34 @@ public interface ChessGame {
   void updateRemainingTime(UUID playerId, long newTimeMillis);
 
   /**
+   * @return plies since the last capture or pawn move, as in a FEN's halfmove clock
+   */
+  int getHalfmoveClock();
+
+  /**
+   * @return the move number, starting at 1 and incrementing after each of black's moves
+   */
+  int getFullmoveNumber();
+
+  /**
+   * @return whether fifty moves have passed with no capture and no pawn move, which either player
+   *     may claim as a draw
+   */
+  boolean isFiftyMoveDraw();
+
+  /**
+   * @return whether the current position has now occurred three times, which either player may
+   *     claim as a draw
+   */
+  boolean isThreefoldRepetition();
+
+  /**
+   * @return this position in Forsyth-Edwards Notation, the interchange format understood by chess
+   *     engines and by any remote board rendering this game
+   */
+  String toFen();
+
+  /**
    * @param color the color of the king
    * @return whether the king with the given color has already moved once
    */

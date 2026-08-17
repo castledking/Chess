@@ -153,7 +153,12 @@ public final class MoveHandler {
     UUID opponentId = holder.getOtherPlayerId(chessGame.getCurrentTurn());
 
     if (status.isInsufficientMaterialDraw(chessGame.getChessBoard())
-        || status.isStalemate(chessGame, opponentId)) {
+        || status.isStalemate(chessGame, opponentId)
+        || chessGame.isThreefoldRepetition()
+        || chessGame.isFiftyMoveDraw()) {
+      // Repetition and the fifty-move rule are drawn automatically rather than offered as a
+      // claim. Nobody is going to claim a draw against an engine opponent, and without this a
+      // game with no pawn moves left can run forever.
       holder.endGame(null);
       return;
     }

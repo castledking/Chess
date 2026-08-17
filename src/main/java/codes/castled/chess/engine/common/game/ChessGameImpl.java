@@ -10,6 +10,7 @@ import codes.castled.chess.engine.api.move.Move;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.move.MoveResult;
 import codes.castled.chess.engine.common.board.CastlingStatus;
+import codes.castled.chess.engine.common.board.FenCodec;
 import codes.castled.chess.engine.common.board.ChessBoardImpl;
 import codes.castled.chess.engine.common.move.MoveValidator;
 import codes.castled.chess.engine.common.move.SpecialMoveHandler;
@@ -40,6 +41,24 @@ public final class ChessGameImpl implements ChessGame {
   private long blackTimeLeftMillis;
   private PieceColor currentTurn = PieceColor.WHITE;
 
+  /** Plies since the last capture or pawn move; at 100 the fifty-move rule applies. */
+  private int halfmoveClock;
+
+  /** Starts at 1 and increments after each of black's moves, as in FEN. */
+  private int fullmoveNumber = 1;
+
+  /**
+   * How many times each position has been reached, keyed by the repetition-relevant part of its
+   * FEN. A third occurrence is a draw by repetition.
+   */
+  private final Map<String, Integer> positionCounts = new HashMap<>();
+
+  /**
+   * The key of the position most recently arrived at. Held rather than recomputed on demand so
+   * that asking about repetition does not depend on whether the caller has toggled the turn yet.
+   */
+  private String lastPositionKey;
+
   public ChessGameImpl(
       ChessGameServiceImpl chessService,
       TimeMode timeMode,
@@ -69,6 +88,8 @@ public final class ChessGameImpl implements ChessGame {
     incrementMillis = timeMode.getIncrementMillis();
 
     capturedPieces = Map.of(whitePlayerId, new ArrayList<>(), blackPlayerId, new ArrayList<>());
+
+    recordPosition(currentTurn);
   }
 
   @Override
@@ -89,6 +110,8 @@ public final class ChessGameImpl implements ChessGame {
       chessBoard.setLastPlayedMove(playedMove);
     }
 
+    advanceCounters(selectedPiece, capturedPiece, result);
+
     if (capturedPiece != null) {
       capturedPieces.get(playerId).add(capturedPiece);
     }
@@ -96,6 +119,51 @@ public final class ChessGameImpl implements ChessGame {
     addIncrement(playerId);
 
     return result;
+  }
+
+  /**
+   * Advances the fifty-move clock, the move number, and the repetition history after a move.
+   *
+   * <p>A pending promotion is skipped: the move is rolled back until a piece is chosen, so the
+   * position on the board is not one that was actually reached. {@link #applyPromotion} finishes
+   * the bookkeeping once the piece is known.
+   *
+   * @param movedPiece the piece that moved
+   * @param capturedPiece the piece captured, or null
+   * @param result the result of the move
+   */
+  private void advanceCounters(
+      Piece movedPiece, @Nullable Piece capturedPiece, MoveResult result) {
+    if (result.promotion()) {
+      return;
+    }
+
+    // A capture or a pawn move is irreversible, so it resets the clock and makes every earlier
+    // position unreachable — which is why the repetition history is cleared with it.
+    if (capturedPiece != null || movedPiece.type() == PieceType.PAWN) {
+      halfmoveClock = 0;
+      positionCounts.clear();
+    } else {
+      halfmoveClock++;
+    }
+
+    if (currentTurn == PieceColor.BLACK) {
+      fullmoveNumber++;
+    }
+
+    // The turn has not been toggled yet, so the side to move in the resulting position is the
+    // opponent of whoever just moved.
+    recordPosition(PieceColor.getOtherColor(currentTurn));
+  }
+
+  /**
+   * Counts the position that has just been arrived at.
+   *
+   * @param sideToMove who is to move in that position
+   */
+  private void recordPosition(PieceColor sideToMove) {
+    lastPositionKey = FenCodec.repetitionKey(this, sideToMove);
+    positionCounts.merge(lastPositionKey, 1, Integer::sum);
   }
 
   private void addIncrement(UUID playerId) {
@@ -221,6 +289,31 @@ public final class ChessGameImpl implements ChessGame {
   }
 
   @Override
+  public int getHalfmoveClock() {
+    return halfmoveClock;
+  }
+
+  @Override
+  public int getFullmoveNumber() {
+    return fullmoveNumber;
+  }
+
+  @Override
+  public boolean isFiftyMoveDraw() {
+    return halfmoveClock >= 100;
+  }
+
+  @Override
+  public boolean isThreefoldRepetition() {
+    return positionCounts.getOrDefault(lastPositionKey, 0) >= 3;
+  }
+
+  @Override
+  public String toFen() {
+    return FenCodec.export(this);
+  }
+
+  @Override
   public boolean hasKingMoved(PieceColor color) {
     return castlingStatus.hasKingMoved(color);
   }
@@ -247,6 +340,15 @@ public final class ChessGameImpl implements ChessGame {
     if (type == PieceType.ROOK) {
       castlingStatus.markRookUnmoved(pawn.color(), to);
     }
+
+    // A promotion is a pawn move, so it always resets the clock and the repetition history.
+    // makeMove deferred this because the position was rolled back until a piece was chosen.
+    halfmoveClock = 0;
+    positionCounts.clear();
+    if (currentTurn == PieceColor.BLACK) {
+      fullmoveNumber++;
+    }
+    recordPosition(PieceColor.getOtherColor(currentTurn));
   }
 
   /**
