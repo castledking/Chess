@@ -3,7 +3,13 @@ package codes.castled.chess.game;
 import codes.castled.chess.Chess;
 import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.config.SettingsConfig;
+import codes.castled.chess.bot.BotDifficulty;
+import codes.castled.chess.bot.ChessBot;
+import codes.castled.chess.bot.SearchBot;
 import codes.castled.chess.ui.ChessViewFactory;
+import codes.castled.chess.wiring.EngineFactory;
+
+import javax.annotation.Nullable;
 import codes.castled.chess.engine.api.game.ChessGame;
 import codes.castled.chess.engine.api.game.ChessGameService;
 import codes.castled.chess.engine.api.game.GameCreationResult;
@@ -32,6 +38,13 @@ public final class GameService {
   private final SettingsConfig settingsConfig;
   private final SoundPlayer soundPlayer;
   private final ChessViewFactory viewFactory;
+  private final EngineFactory engineFactory;
+
+  /**
+   * The engine opponents currently playing, keyed by the id each plays under. A bot stands in for
+   * a player everywhere else in the plugin, so this is the only place that knows the difference.
+   */
+  private final Map<UUID, ChessBot> bots = new ConcurrentHashMap<>();
 
   public GameService(
       Chess plugin,
@@ -40,7 +53,9 @@ public final class GameService {
       MessageConfig messageConfig,
       SettingsConfig settingsConfig,
       SoundPlayer soundPlayer,
-      ChessViewFactory viewFactory) {
+      ChessViewFactory viewFactory,
+      EngineFactory engineFactory) {
+    this.engineFactory = engineFactory;
     this.plugin = plugin;
     this.chessService = chessService;
     this.moveCalculator = moveCalculator;
@@ -85,6 +100,67 @@ public final class GameService {
   }
 
   /**
+   * Starts a game against an engine opponent.
+   *
+   * <p>The bot is given its own id and stands in for a player from then on: it holds a colour,
+   * has a clock, and can be checkmated. Everything downstream treats it as a participant who
+   * simply never happens to be online, which the views and messaging already handle because they
+   * were written to no-op for absent players.
+   *
+   * @param player the human, who plays white so they move first
+   * @param difficulty how strong the opponent should be
+   * @param timeMode the time control
+   * @return the result of the game creation attempt
+   */
+  public GameCreationResult createCpuGame(
+      Player player, BotDifficulty difficulty, TimeMode timeMode) {
+
+    ChessBot bot =
+        new SearchBot(UUID.randomUUID(), difficulty, engineFactory, new java.util.Random());
+
+    GameCreationResult result =
+        chessService.createGame(player.getUniqueId(), bot.id(), timeMode);
+
+    if (result.type() != GameCreationResultType.SUCCESS) {
+      return result;
+    }
+
+    bots.put(bot.id(), bot);
+    ChessGame game = result.game();
+    games.put(
+        game.getGameId(),
+        new ChessGameHolder(
+            plugin,
+            this,
+            game,
+            player.getUniqueId(),
+            bot.id(),
+            moveCalculator,
+            messageConfig,
+            settingsConfig,
+            soundPlayer,
+            viewFactory));
+    return result;
+  }
+
+  /**
+   * @param playerId an id holding a colour in some game
+   * @return the engine opponent playing under that id, or null if it belongs to a real player
+   */
+  @Nullable
+  public ChessBot botFor(UUID playerId) {
+    return bots.get(playerId);
+  }
+
+  /** Forgets the bot that played under the given id, releasing anything it held. */
+  void releaseBot(UUID playerId) {
+    ChessBot bot = bots.remove(playerId);
+    if (bot != null) {
+      bot.close();
+    }
+  }
+
+  /**
    * Ends a running game with no winner.
    *
    * @param gameId the id of the game
@@ -117,6 +193,11 @@ public final class GameService {
   }
 
   public void removeGame(UUID gameId) {
+    ChessGameHolder holder = games.get(gameId);
+    if (holder != null) {
+      releaseBot(holder.getChessGame().getWhitePlayerId());
+      releaseBot(holder.getChessGame().getBlackPlayerId());
+    }
     games.remove(gameId);
   }
 

@@ -16,6 +16,11 @@ import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.api.piece.PieceType;
 import codes.castled.chess.engine.common.board.SquareUtils;
+import codes.castled.chess.engine.common.move.UciMove;
+import codes.castled.chess.util.Scheduler;
+
+import javax.annotation.Nullable;
+import codes.castled.chess.bot.ChessBot;
 import codes.castled.chess.chat.InviteBroadcaster;
 import codes.castled.chess.chat.WatchInvite;
 import lombok.Getter;
@@ -64,6 +69,9 @@ public final class ChessGameHolder {
   /** Renders the watch broadcast with whichever chat library the server has. */
   private final InviteBroadcaster inviteBroadcaster = InviteBroadcaster.forPlatform();
 
+  /** Guards against dispatching a second search while one is already running. */
+  private boolean botThinking;
+
   public ChessGameHolder(
       Chess plugin,
       GameService gameService,
@@ -101,10 +109,8 @@ public final class ChessGameHolder {
   }
 
   private void broadcastWatchGame(UUID whiteId, UUID blackId) {
-    String whiteName = Bukkit.getOfflinePlayer(whiteId).getName();
-    String blackName = Bukkit.getOfflinePlayer(blackId).getName();
-    if (whiteName == null) whiteName = "White";
-    if (blackName == null) blackName = "Black";
+    String whiteName = displayName(whiteId, "White");
+    String blackName = displayName(blackId, "Black");
 
     // Rendering is delegated so this class names no chat library: Spigot has no Adventure.
     inviteBroadcaster.broadcast(
@@ -117,6 +123,20 @@ public final class ChessGameHolder {
             "Click to spectate this game"),
         whiteId,
         blackId);
+  }
+
+  /**
+   * @param playerId a participant
+   * @param fallback the name to use when nothing better is known
+   * @return the name to show for that participant, which for an engine opponent is its own
+   */
+  private String displayName(UUID playerId, String fallback) {
+    ChessBot bot = gameService.botFor(playerId);
+    if (bot != null) {
+      return bot.name();
+    }
+    String name = Bukkit.getOfflinePlayer(playerId).getName();
+    return name == null ? fallback : name;
   }
 
   /**
@@ -276,6 +296,86 @@ public final class ChessGameHolder {
     }
     premoves.remove(currentTurn);
     return false;
+  }
+
+  /**
+   * Plays the engine opponent's move when the turn has just passed to one.
+   *
+   * <p>The search runs off the server threads, so the position is snapshotted to a FEN here, on
+   * the thread that owns the board, and the bot only ever sees that string. The move comes back
+   * to the global region to be applied. Nothing else may read the live board in between.
+   *
+   * <p>Called from {@link MoveHandler} right after the turn toggles, alongside the premove hook.
+   */
+  public void playBotMoveIfDue() {
+    UUID turn = chessGame.getCurrentTurn();
+    ChessBot bot = gameService.botFor(turn);
+
+    if (bot == null || botThinking) {
+      return;
+    }
+
+    botThinking = true;
+    String fen = chessGame.toFen();
+    UUID gameId = chessGame.getGameId();
+
+    Scheduler.async(
+        plugin,
+        () -> {
+          String chosen = bot.chooseMove(fen);
+          Scheduler.global(plugin, () -> applyBotMove(bot, gameId, chosen));
+        });
+  }
+
+  /**
+   * Applies a move the engine chose, back on the thread that owns the board.
+   *
+   * <p>Everything is rechecked rather than assumed: the game may have ended, been resigned, or
+   * moved on while the search was running, and the engine's answer is not trusted to be legal in
+   * the position it is finally applied to.
+   */
+  private void applyBotMove(ChessBot bot, UUID gameId, @Nullable String notation) {
+    botThinking = false;
+
+    if (gameService.getGameById(gameId) != this || !chessGame.getCurrentTurn().equals(bot.id())) {
+      // The game ended or moved on while the bot was thinking; its answer is stale.
+      return;
+    }
+
+    if (notation == null) {
+      // No move to make. The status evaluator will already have ended a finished game, so this
+      // means the bot gave up rather than that the position is over.
+      endGame(getOtherPlayerId(bot.id()));
+      return;
+    }
+
+    UciMove move;
+    try {
+      move = UciMove.parse(notation);
+    } catch (IllegalArgumentException exception) {
+      plugin.getLogger().warning("Engine returned an unreadable move (" + notation + "); resigning.");
+      endGame(getOtherPlayerId(bot.id()));
+      return;
+    }
+
+    chessGame.selectPiece(move.from(), bot.id());
+    MoveResult result = chessGame.makeMove(move.to(), bot.id());
+    chessGame.unselectPiece(bot.id());
+
+    if (result.type() != MoveResultType.SUCCESS) {
+      plugin.getLogger().warning("Engine chose an illegal move (" + notation + "); resigning.");
+      endGame(getOtherPlayerId(bot.id()));
+      return;
+    }
+
+    moveHandler.handleSuccessfulMove(
+        result, new Move(null, move.from(), move.to()), bot.id(), messageConfig);
+
+    if (result.promotion()) {
+      // A bot is never shown the promotion dialog, so its choice is applied straight away.
+      PieceType chosen = move.promotion() == null ? PieceType.QUEEN : move.promotion();
+      moveHandler.applyPromotion(getColor(bot.id()), chosen);
+    }
   }
 
   /** Handles a draw control interaction. */

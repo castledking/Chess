@@ -1,6 +1,9 @@
 name: Chess
 version: '${version}'
 main: codes.castled.chess.Chess
+dev-url: https://github.com/castledking/Chess
+website: https://castled.codes
+author: castledking
 api-version: '1.21'
 folia-supported: true
 softdepend: [ResourcePackManager]
@@ -8,4 +11,4 @@ description: Play chess on a native Paper dialog board, or a Bukkit inventory bo
 commands:
   chess:
     description: Open the chess board or manage duel requests
-    usage: /chess <open|duel|accept|decline|help>
+    usage: /chess <open|duel|duelcpu|accept|decline|watch|help>

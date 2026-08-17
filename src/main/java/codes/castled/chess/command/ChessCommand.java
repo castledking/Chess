@@ -2,6 +2,7 @@ package codes.castled.chess.command;
 
 import codes.castled.chess.Chess;
 import codes.castled.chess.util.Scheduler;
+import codes.castled.chess.bot.BotDifficulty;
 import codes.castled.chess.engine.api.game.TimeMode;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -61,6 +62,8 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
       case 3 -> {
         if (args[0].equalsIgnoreCase("duel")) {
           handler.handleDuel(player, args[1], args[2]);
+        } else if (args[0].equalsIgnoreCase("duelcpu")) {
+          handler.handleDuelCpu(player, args[1], args[2]);
         } else {
           handler.sendUsage(player);
         }
@@ -68,6 +71,12 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
       default -> handler.sendUsage(player);
     }
   }
+
+  /** The engine difficulty scale, offered as completions for {@code /chess duelcpu}. */
+  private static final List<String> DIFFICULTIES =
+      java.util.stream.IntStream.rangeClosed(BotDifficulty.MIN, BotDifficulty.MAX)
+          .mapToObj(String::valueOf)
+          .toList();
 
   @Override
   public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
@@ -78,10 +87,15 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
             .toList();
     if (args.length == 1) {
       return StringUtil.copyPartialMatches(
-          args[0], Arrays.asList("duel", "open", "accept", "decline", "watch", "help"), new ArrayList<>());
+          args[0],
+          Arrays.asList("duel", "duelcpu", "open", "accept", "decline", "watch", "help"),
+          new ArrayList<>());
     } else if (args.length == 2 && (args[0].equalsIgnoreCase("duel") || args[0].equalsIgnoreCase("watch"))) {
       return StringUtil.copyPartialMatches(args[1], otherPlayerNames, new ArrayList<>());
-    } else if (args.length == 3 && args[0].equalsIgnoreCase("duel")) {
+    } else if (args.length == 2 && args[0].equalsIgnoreCase("duelcpu")) {
+      return StringUtil.copyPartialMatches(args[1], DIFFICULTIES, new ArrayList<>());
+    } else if (args.length == 3
+        && (args[0].equalsIgnoreCase("duel") || args[0].equalsIgnoreCase("duelcpu"))) {
       return StringUtil.copyPartialMatches(args[2], TimeMode.getAllDisplayNames(), new ArrayList<>());
     } else if (args.length == 2
         && (args[0].equalsIgnoreCase("accept") || args[0].equalsIgnoreCase("decline"))) {

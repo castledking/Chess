@@ -199,6 +199,11 @@ public final class MoveHandler {
     // sequence and open a window that silently rejects the premover's next clicks.
     boolean premoveRenderedFinalState = holder.playPremoveIfQueued();
 
+    // If the turn just passed to an engine opponent, set it thinking. The search runs off the
+    // server threads and applies its move later, so this returns immediately and the refresh
+    // below still renders the position the player is waiting on.
+    holder.playBotMoveIfDue();
+
     view.clearTimeHighlight(chessGame.getCurrentTurn());
     view.cancelInfoTasks();
     view.resetInfo();

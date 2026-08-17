@@ -12,6 +12,7 @@ messages:
     target-not-in-game: '&cThat player is not currently in a chess game.'
     # Shown on the inventory board, which cannot host spectators.
     spectating-unavailable: '&cSpectating is not available on this server''s chess board.'
+    invalid-difficulty: '&cPick a computer difficulty from 1 to 10.'
     invalid-time-mode: '&cThis time mode is invalid. Please select one from the shown time modes.'
     already-requested-duel: '&cYou have already sent a duel request to this player. Wait for them to accept or decline.'
     duel-request-to-expired: '&7The duel request to [opponent] has expired.'

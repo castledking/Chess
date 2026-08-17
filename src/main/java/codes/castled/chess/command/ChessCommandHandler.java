@@ -4,6 +4,7 @@ import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.game.ChessGameHolder;
 import codes.castled.chess.game.GameService;
 import codes.castled.chess.request.DuelRequestService;
+import codes.castled.chess.bot.BotDifficulty;
 import codes.castled.chess.engine.api.game.TimeMode;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -103,6 +104,33 @@ public final class ChessCommandHandler {
     }
   }
 
+  /**
+   * Starts a game against an engine opponent.
+   *
+   * @param player the challenger, who plays white
+   * @param level the requested difficulty, 1 to 10
+   * @param timeMode the time control
+   */
+  public void handleDuelCpu(Player player, String level, String timeMode) {
+    BotDifficulty difficulty = BotDifficulty.parse(level);
+    if (difficulty == null) {
+      player.sendMessage(messageConfig.getInvalidDifficulty());
+      return;
+    }
+
+    if (!TimeMode.containsMode(timeMode)) {
+      player.sendMessage(messageConfig.getInvalidTimeMode());
+      return;
+    }
+
+    if (gameService.isPlaying(player.getUniqueId())) {
+      player.sendMessage(messageConfig.getYouAlreadyInGame());
+      return;
+    }
+
+    gameService.createCpuGame(player, difficulty, TimeMode.fromDisplayName(timeMode));
+  }
+
   public void sendHelp(Player player, String indexString) {
     try {
       int index = Integer.parseInt(indexString);
@@ -115,6 +143,8 @@ public final class ChessCommandHandler {
                   ChatColor.GRAY + "Use /chess help <n> to get page n of help.",
                   ChatColor.GOLD + "/chess duel <Player> <TimeMode>" + ChatColor.GRAY + ": "
                       + ChatColor.WHITE + "Sends a chess duel with the given time mode.",
+                  ChatColor.GOLD + "/chess duelcpu <1-10> <TimeMode>" + ChatColor.GRAY + ": "
+                      + ChatColor.WHITE + "Plays the computer at the given difficulty.",
                   ChatColor.GOLD + "/chess open" + ChatColor.GRAY + ": " + ChatColor.WHITE
                       + "Reopens the chess board if a game is being played.",
                   ChatColor.GOLD + "/chess accept <Player>" + ChatColor.GRAY + ": " + ChatColor.WHITE

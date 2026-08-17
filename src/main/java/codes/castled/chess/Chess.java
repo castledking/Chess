@@ -35,7 +35,14 @@ public final class Chess extends JavaPlugin {
             this, ui, messages, engine.moveCalculator(), settings.isVerticalCastlingEnabled());
     gameService =
         new GameService(
-            this, engine.chessGameService(), engine.moveCalculator(), messages, settings, sound, viewFactory);
+            this,
+            engine.chessGameService(),
+            engine.moveCalculator(),
+            messages,
+            settings,
+            sound,
+            viewFactory,
+            engine);
     DuelRequestService duelRequestService = new DuelRequestService(this, gameService, messages, settings);
     ResourcePackService resourcePackService = new ResourcePackService(this, settings);
 
