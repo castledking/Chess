@@ -146,7 +146,8 @@ public final class ChessGameHolder {
             displayName(chessGame.getBlackPlayerId(), "Black"),
             chessGame.getTimeLeftMillis(chessGame.getWhitePlayerId()),
             chessGame.getTimeLeftMillis(chessGame.getBlackPlayerId()),
-            chessGame.getCurrentTurn().equals(chessGame.getWhitePlayerId())));
+            chessGame.getCurrentTurn().equals(chessGame.getWhitePlayerId()),
+            chessGame.toFen()));
   }
 
   /**
@@ -158,6 +159,10 @@ public final class ChessGameHolder {
     ChessBot bot = gameService.botFor(playerId);
     if (bot != null) {
       return bot.name();
+    }
+    var web = gameService.webParticipantFor(playerId);
+    if (web != null) {
+      return web.name();
     }
     String name = Bukkit.getOfflinePlayer(playerId).getName();
     return name == null ? fallback : name;
@@ -399,6 +404,45 @@ public final class ChessGameHolder {
       // A bot is never shown the promotion dialog, so its choice is applied straight away.
       PieceType chosen = move.promotion() == null ? PieceType.QUEEN : move.promotion();
       moveHandler.applyPromotion(getColor(bot.id()), chosen);
+    }
+  }
+
+  /**
+   * Applies a move sent by the dashboard player.
+   *
+   * <p>Held to the same standard as an engine's move: it is rejected unless the game is still
+   * running, it really is that participant's turn, and the engine accepts the move. A browser is
+   * the least trustworthy source of a move in the system, so nothing about it is assumed.
+   *
+   * @param notation the move in UCI notation
+   */
+  public void applyWebMove(String notation) {
+    UUID turn = chessGame.getCurrentTurn();
+    if (gameService.webParticipantFor(turn) == null) {
+      return; // Not the web player's turn; ignore rather than trust the sender.
+    }
+
+    UciMove move;
+    try {
+      move = UciMove.parse(notation);
+    } catch (IllegalArgumentException exception) {
+      return;
+    }
+
+    chessGame.selectPiece(move.from(), turn);
+    MoveResult result = chessGame.makeMove(move.to(), turn);
+    chessGame.unselectPiece(turn);
+
+    if (result.type() != MoveResultType.SUCCESS) {
+      return; // Illegal in this position; the dashboard will re-render from the real FEN.
+    }
+
+    moveHandler.handleSuccessfulMove(
+        result, new Move(null, move.from(), move.to()), turn, messageConfig);
+
+    if (result.promotion()) {
+      PieceType chosen = move.promotion() == null ? PieceType.QUEEN : move.promotion();
+      moveHandler.applyPromotion(getColor(turn), chosen);
     }
   }
 

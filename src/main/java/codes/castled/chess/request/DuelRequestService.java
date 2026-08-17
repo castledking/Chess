@@ -4,6 +4,7 @@ import codes.castled.chess.Chess;
 import codes.castled.chess.config.MessageConfig;
 import codes.castled.chess.config.SettingsConfig;
 import codes.castled.chess.game.GameService;
+import codes.castled.chess.net.WebParticipant;
 import codes.castled.chess.util.Scheduler;
 import codes.castled.chess.engine.api.game.GameCreationResult;
 import codes.castled.chess.engine.api.game.GameCreationResultType;
@@ -77,9 +78,13 @@ public final class DuelRequestService {
   public void acceptRequest(UUID receiverId, UUID senderId) {
     DuelRequest duelRequest = getDuelRequest(senderId, receiverId);
     if (duelRequest != null) {
+      // A challenge from the dashboard has no Player behind it, so it takes the web path.
+      WebParticipant web = gameService.webParticipantFor(senderId);
       GameCreationResult creationResult =
-          gameService.createGame(
-              Bukkit.getPlayer(senderId), Bukkit.getPlayer(receiverId), duelRequest.timeMode());
+          web != null
+              ? gameService.createWebGame(web, Bukkit.getPlayer(receiverId), duelRequest.timeMode())
+              : gameService.createGame(
+                  Bukkit.getPlayer(senderId), Bukkit.getPlayer(receiverId), duelRequest.timeMode());
       if (creationResult.type() == GameCreationResultType.SUCCESS) {
         ongoingRequests.remove(duelRequest);
       } else {

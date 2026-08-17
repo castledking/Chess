@@ -41,6 +41,9 @@ public final class OfflineNetwork implements ChessNetwork {
   public void setWebChallengeListener(WebChallengeListener listener) {}
 
   @Override
+  public void setWebMoveListener(WebMoveListener listener) {}
+
+  @Override
   public void publishGame(GameSummary game) {}
 
   @Override

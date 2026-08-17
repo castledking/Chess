@@ -7,6 +7,7 @@ import codes.castled.chess.bot.BotDifficulty;
 import codes.castled.chess.bot.ChessBot;
 import codes.castled.chess.bot.SearchBot;
 import codes.castled.chess.net.ChessNetwork;
+import codes.castled.chess.net.WebParticipant;
 import codes.castled.chess.ui.ChessViewFactory;
 import codes.castled.chess.wiring.EngineFactory;
 
@@ -47,6 +48,12 @@ public final class GameService {
    * a player everywhere else in the plugin, so this is the only place that knows the difference.
    */
   private final Map<UUID, ChessBot> bots = new ConcurrentHashMap<>();
+
+  /**
+   * People playing from the dashboard, keyed by the id each plays under. Held for the same reason
+   * as bots: everywhere else treats them as a participant who happens never to be online.
+   */
+  private final Map<UUID, WebParticipant> webPlayers = new ConcurrentHashMap<>();
 
   public GameService(
       Chess plugin,
@@ -150,6 +157,68 @@ public final class GameService {
   }
 
   /**
+   * Starts a game between someone on the dashboard and someone in game.
+   *
+   * <p>The web player takes white, since they issued the challenge and so move first.
+   *
+   * @param web the dashboard player
+   * @param player the in-game player
+   * @param timeMode the time control
+   * @return the result of the game creation attempt
+   */
+  public GameCreationResult createWebGame(
+      WebParticipant web, Player player, TimeMode timeMode) {
+
+    GameCreationResult result =
+        chessService.createGame(web.id(), player.getUniqueId(), timeMode);
+
+    if (result.type() != GameCreationResultType.SUCCESS) {
+      return result;
+    }
+
+    webPlayers.put(web.id(), web);
+    ChessGame game = result.game();
+    games.put(
+        game.getGameId(),
+        new ChessGameHolder(
+            plugin,
+            this,
+            game,
+            web.id(),
+            player.getUniqueId(),
+            moveCalculator,
+            messageConfig,
+            settingsConfig,
+            soundPlayer,
+            viewFactory,
+            network));
+    return result;
+  }
+
+  /** Registers a pending dashboard challenger so a duel request can name them. */
+  public void registerWebParticipant(WebParticipant web) {
+    webPlayers.put(web.id(), web);
+  }
+
+  /**
+   * @param playerId an id holding a colour in some game
+   * @return the dashboard player under that id, or null if it is not one
+   */
+  @Nullable
+  public WebParticipant webParticipantFor(UUID playerId) {
+    return webPlayers.get(playerId);
+  }
+
+  /**
+   * @param gameId a game id
+   * @return the game with that id, or null
+   */
+  @Nullable
+  public ChessGameHolder holderFor(UUID gameId) {
+    return games.get(gameId);
+  }
+
+  /**
    * @param playerId an id holding a colour in some game
    * @return the engine opponent playing under that id, or null if it belongs to a real player
    */
@@ -164,6 +233,7 @@ public final class GameService {
     if (bot != null) {
       bot.close();
     }
+    webPlayers.remove(playerId);
   }
 
   /**

@@ -11,6 +11,8 @@ import codes.castled.chess.listener.ChessGameListener;
 import codes.castled.chess.listener.NetworkPresenceListener;
 import codes.castled.chess.net.ChessNetwork;
 import codes.castled.chess.net.NetworkFactory;
+import codes.castled.chess.net.WebParticipant;
+import codes.castled.chess.engine.api.game.TimeMode;
 import codes.castled.chess.pack.ResourcePackService;
 import codes.castled.chess.request.DuelRequestService;
 import codes.castled.chess.ui.ChessViewFactory;
@@ -66,14 +68,33 @@ public final class Chess extends JavaPlugin {
     Bukkit.getPluginManager().registerEvents(new InventoryBoardListener(gameService), this);
     Bukkit.getPluginManager().registerEvents(new NetworkPresenceListener(network), this);
 
-    // A web challenge is announced but not yet turned into a duel request: accepting one needs a
-    // board on the web for the challenger to actually play on, which does not exist yet. Raising
-    // a request that cannot be honoured would be worse than saying so.
+    // A dashboard challenge becomes an ordinary duel request. The challenger is a participant
+    // with no Player behind it, exactly like an engine opponent, so accepting it starts a real
+    // game that the dashboard then plays through the hub.
     network.setWebChallengeListener(
         (target, challenger, timeMode) -> {
           org.bukkit.entity.Player player = Bukkit.getPlayer(target);
-          if (player != null) {
-            player.sendMessage(messages.getWebChallengeReceived(challenger));
+          if (player == null) {
+            return;
+          }
+
+          WebParticipant web =
+              new WebParticipant(java.util.UUID.randomUUID(), challenger);
+          gameService.registerWebParticipant(web);
+
+          duelRequestService.sendRequest(
+              web.id(),
+              target,
+              web.name(),
+              player.getName(),
+              TimeMode.containsMode(timeMode) ? TimeMode.fromDisplayName(timeMode) : TimeMode.TEN);
+        });
+
+    network.setWebMoveListener(
+        (gameId, notation) -> {
+          var holder = gameService.holderFor(gameId);
+          if (holder != null) {
+            holder.applyWebMove(notation);
           }
         });
 

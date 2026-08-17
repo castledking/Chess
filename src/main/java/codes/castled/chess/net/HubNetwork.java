@@ -51,6 +51,7 @@ public final class HubNetwork implements ChessNetwork {
   private volatile WebSocket socket;
   private volatile long retrySeconds = MIN_RETRY_SECONDS;
   private volatile WebChallengeListener challengeListener;
+  private volatile WebMoveListener moveListener;
 
   /** Frames can arrive split across several callbacks, so text is accumulated until complete. */
   private final StringBuilder incoming = new StringBuilder();
@@ -107,6 +108,11 @@ public final class HubNetwork implements ChessNetwork {
   }
 
   @Override
+  public void setWebMoveListener(WebMoveListener listener) {
+    this.moveListener = listener;
+  }
+
+  @Override
   public void publishGame(GameSummary game) {
     if (!isConnected()) {
       return;
@@ -120,6 +126,7 @@ public final class HubNetwork implements ChessNetwork {
     frame.addProperty("whiteMillis", game.whiteMillis());
     frame.addProperty("blackMillis", game.blackMillis());
     frame.addProperty("turn", game.whiteToMove() ? "white" : "black");
+    frame.addProperty("fen", game.fen());
     send(frame);
   }
 
@@ -256,6 +263,7 @@ public final class HubNetwork implements ChessNetwork {
     switch (type) {
       case HubProtocol.ROSTER -> applyRoster(frame);
       case HubProtocol.WEB_CHALLENGE -> handleWebChallenge(frame);
+      case HubProtocol.WEB_MOVE -> handleWebMove(frame);
       case HubProtocol.REJECTED -> {
         String reason = frame.has("reason") ? frame.get("reason").getAsString() : "no reason given";
         plugin.getLogger().warning("Chess network: the hub refused this server (" + reason + ").");
@@ -289,6 +297,24 @@ public final class HubNetwork implements ChessNetwork {
 
     codes.castled.chess.util.Scheduler.global(
         plugin, () -> listener.onWebChallenge(target, challenger, timeMode));
+  }
+
+  /** Hands a web move to the listener, on the thread that owns the board. */
+  private void handleWebMove(JsonObject frame) {
+    WebMoveListener listener = moveListener;
+    if (listener == null || !frame.has("gameId") || !frame.has("move")) {
+      return;
+    }
+
+    UUID gameId;
+    try {
+      gameId = UUID.fromString(frame.get("gameId").getAsString());
+    } catch (IllegalArgumentException exception) {
+      return;
+    }
+
+    String notation = frame.get("move").getAsString();
+    codes.castled.chess.util.Scheduler.global(plugin, () -> listener.onWebMove(gameId, notation));
   }
 
   /** Replaces the roster wholesale, which is why a missed frame cannot leave it stale. */

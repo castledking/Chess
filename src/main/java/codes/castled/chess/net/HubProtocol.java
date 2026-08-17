@@ -34,6 +34,7 @@ public final class HubProtocol {
   public static final String GAME_ENDED = "GAME_ENDED";
   public static final String ROSTER = "ROSTER";
   public static final String WEB_CHALLENGE = "WEB_CHALLENGE";
+  public static final String WEB_MOVE = "WEB_MOVE";
   public static final String REJECTED = "REJECTED";
 
   /** Field naming the message type on every frame. */

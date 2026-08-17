@@ -48,6 +48,13 @@ public interface ChessNetwork {
   void setWebChallengeListener(WebChallengeListener listener);
 
   /**
+   * Sets who is told when a web player moves. Replaces any previous listener.
+   *
+   * @param listener the listener, called on the global region thread
+   */
+  void setWebMoveListener(WebMoveListener listener);
+
+  /**
    * Tells the network about a game running here, so it can be shown elsewhere.
    *
    * <p>Sent when a game starts and after every move, not on every clock tick. The frame carries

@@ -14,6 +14,7 @@ import java.util.UUID;
  * @param whiteMillis white's remaining time
  * @param blackMillis black's remaining time
  * @param whiteToMove whether white is the side to move, so a viewer knows which clock is running
+ * @param fen the position, so a web board can render it and a web player can move in it
  */
 public record GameSummary(
     UUID gameId,
@@ -21,4 +22,5 @@ public record GameSummary(
     String black,
     long whiteMillis,
     long blackMillis,
-    boolean whiteToMove) {}
+    boolean whiteToMove,
+    String fen) {}
