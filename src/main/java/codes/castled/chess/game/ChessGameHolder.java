@@ -134,9 +134,9 @@ public final class ChessGameHolder {
   /**
    * Tells the network what this game looks like now.
    *
-   * <p>Called when the game starts and after each move rather than on every clock tick: the frame
-   * carries both clocks and whose turn it is, which is enough for a watcher to count the moving
-   * side down themselves.
+   * <p>Called when the game starts, after each move, and every few seconds by the clock so the
+   * dashboard's extrapolated countdown stays in sync. The frame carries both clocks and whose
+   * turn it is, which is enough for a watcher to count the moving side down themselves.
    */
   public void publishToNetwork() {
     network.publishGame(

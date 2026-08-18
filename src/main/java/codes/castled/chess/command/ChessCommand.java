@@ -42,6 +42,15 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
   }
 
   private void dispatch(Player player, String[] args) {
+    // Accept/decline may carry a multi-word display name (e.g. from the dashboard), so join
+    // every token after the subcommand before looking up the request.
+    if (args.length >= 2
+        && (args[0].equalsIgnoreCase("accept") || args[0].equalsIgnoreCase("decline"))) {
+      String name = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
+      handler.handleAcceptOrDecline(player, args[0], name);
+      return;
+    }
+
     switch (args.length) {
       case 1 -> {
         if (args[0].equalsIgnoreCase("open")) {
@@ -53,9 +62,7 @@ public final class ChessCommand implements CommandExecutor, TabCompleter {
         }
       }
       case 2 -> {
-        if (args[0].equalsIgnoreCase("accept") || args[0].equalsIgnoreCase("decline")) {
-          handler.handleAcceptOrDecline(player, args[0], args[1]);
-        } else if (args[0].equalsIgnoreCase("watch")) {
+        if (args[0].equalsIgnoreCase("watch")) {
           handler.handleWatch(player, args[1]);
         } else if (args[0].equalsIgnoreCase("help")) {
           handler.sendHelp(player, args[1]);

@@ -18,6 +18,13 @@ public final class GameClock {
   /** One redraw per second: fine for a visible clock and gentle on dialog re-sends. */
   private static final long PERIOD_TICKS = 20L;
 
+  /**
+   * Publish fresh clock data to the hub every few seconds so the dashboard's extrapolated
+   * countdown does not reset on each poll. Moves already publish; this covers the ticks in between.
+   */
+  private static final long PUBLISH_INTERVAL_TICKS = 5L;
+  private long ticksSincePublish;
+
   private final Chess plugin;
   private final ChessGameHolder holder;
   private final ChessGame chessGame;
@@ -57,6 +64,12 @@ public final class GameClock {
 
               holder.getDrawHandler().updateTimestamps();
               holder.getSurrenderHandler().updateTimestamps();
+
+              ticksSincePublish++;
+              if (ticksSincePublish >= PUBLISH_INTERVAL_TICKS) {
+                ticksSincePublish = 0;
+                holder.publishToNetwork();
+              }
             },
             PERIOD_TICKS,
             PERIOD_TICKS);

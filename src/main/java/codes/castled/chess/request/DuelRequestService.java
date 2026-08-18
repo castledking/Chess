@@ -203,6 +203,21 @@ public final class DuelRequestService {
     return null;
   }
 
+  /**
+   * Finds a pending request by the sender's display name and the receiver's id. Used when the
+   * sender is a web participant — they have no {@link org.bukkit.entity.Player} so the UUID-based
+   * lookup in the command handler cannot resolve them.
+   */
+  public DuelRequest findRequestBySenderName(UUID receiverId, String senderName) {
+    for (DuelRequest duelRequest : ongoingRequests) {
+      if (duelRequest.receiverId().equals(receiverId)
+          && duelRequest.senderName().equalsIgnoreCase(senderName)) {
+        return duelRequest;
+      }
+    }
+    return null;
+  }
+
   private void sendMessage(UUID playerId, String message) {
     Player player = Bukkit.getPlayer(playerId);
     if (player != null) {

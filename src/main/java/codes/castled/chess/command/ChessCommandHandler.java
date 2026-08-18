@@ -7,9 +7,12 @@ import codes.castled.chess.request.DuelRequestService;
 import codes.castled.chess.bot.BotDifficulty;
 import codes.castled.chess.net.ChessNetwork;
 import codes.castled.chess.engine.api.game.TimeMode;
+import codes.castled.chess.request.DuelRequest;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 /** Runs the actions behind the /chess subcommands. */
 public final class ChessCommandHandler {
@@ -49,14 +52,24 @@ public final class ChessCommandHandler {
    */
   public void handleAcceptOrDecline(Player player, String reaction, String requestName) {
     Player duelRequestSender = Bukkit.getPlayer(requestName);
+    UUID senderId;
     if (duelRequestSender != null) {
-      if (reaction.equalsIgnoreCase("accept")) {
-        duelRequestService.acceptRequest(player.getUniqueId(), duelRequestSender.getUniqueId());
-      } else {
-        duelRequestService.declineRequest(player.getUniqueId(), duelRequestSender.getUniqueId());
-      }
+      senderId = duelRequestSender.getUniqueId();
     } else {
-      player.sendMessage(messageConfig.getDuelRequestSenderOffline());
+      // The sender may be a web participant (no Player object). Look up the pending request by
+      // name so the command still works when the challenger is on the dashboard.
+      DuelRequest pending =
+          duelRequestService.findRequestBySenderName(player.getUniqueId(), requestName);
+      if (pending == null) {
+        player.sendMessage(messageConfig.getDuelRequestSenderOffline());
+        return;
+      }
+      senderId = pending.senderId();
+    }
+    if (reaction.equalsIgnoreCase("accept")) {
+      duelRequestService.acceptRequest(player.getUniqueId(), senderId);
+    } else {
+      duelRequestService.declineRequest(player.getUniqueId(), senderId);
     }
   }
 
