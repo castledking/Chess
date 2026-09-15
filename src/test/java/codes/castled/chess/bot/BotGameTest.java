@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.TimeMode;
 import codes.castled.chess.engine.api.move.MoveResultType;
 import codes.castled.chess.engine.api.piece.PieceType;
@@ -30,7 +31,7 @@ class BotGameTest {
 
   @Test
   void twoBotsPlayALegalGameThatTerminates() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     ChessGame game = engine.chessGameService().createGame(WHITE, BLACK, TimeMode.TEN).game();
 
     // Level 1 keeps the search to one ply so a whole game fits in a test run.
@@ -81,7 +82,7 @@ class BotGameTest {
   void aBotNeverProposesAMoveTheEngineRefuses() {
     // Deliberately awkward: a cramped position with pins, castling rights and a promotion race.
     String fen = "r3k2r/pPppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
 
     for (int difficulty = BotDifficulty.MIN; difficulty <= BotDifficulty.MAX; difficulty++) {
       final int level = difficulty;

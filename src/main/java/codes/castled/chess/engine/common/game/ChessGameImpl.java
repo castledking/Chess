@@ -129,6 +129,8 @@ public final class ChessGameImpl implements ChessGame {
     game.applyCastlingRights(position);
     game.applyEnPassantTarget(position);
 
+    // FEN has no field for it, so a loaded position grants both kings their leap again — an
+    // approximation only ever seen by bot snapshots, which reason about near enough positions.
     return game;
   }
 
@@ -276,6 +278,8 @@ public final class ChessGameImpl implements ChessGame {
     specialMoveHandler.updateCastlingStatus(
         fromSquare, toSquare, selectedPiece, capturedPiece, currentTurn);
 
+    noteKingsLeap(fromSquare, toSquare, selectedPiece, currentTurn);
+
     MoveResult result =
         firstNotNull(
             specialMoveHandler.handleEnPassantMove(
@@ -287,6 +291,31 @@ public final class ChessGameImpl implements ChessGame {
     return result != null
         ? result
         : MoveResult.success();
+  }
+
+  /**
+   * Spends the mover's King's Leap when the king has just moved with a knight's geometry.
+   *
+   * <p>Only a leap can produce that shape: a step stays within one rank and file, and castling
+   * travels two squares in exactly one. The 1500s rules are the only source of such moves, so
+   * checking unconditionally is safe — and keeps this class ignorant of which eggs are on.
+   *
+   * @param fromSquare the starter square
+   * @param toSquare the destination square
+   * @param selectedPiece the moved piece
+   * @param currentTurn the color of the player who made the move
+   */
+  private void noteKingsLeap(
+      Square fromSquare, Square toSquare, Piece selectedPiece, PieceColor currentTurn) {
+    if (selectedPiece.type() != PieceType.KING) {
+      return;
+    }
+
+    int rowDelta = Math.abs(toSquare.getRowIndex() - fromSquare.getRowIndex());
+    int columnDelta = Math.abs(toSquare.getColumnIndex() - fromSquare.getColumnIndex());
+    if (rowDelta * columnDelta == 2) {
+      castlingStatus.markKingsLeapUsed(currentTurn);
+    }
   }
 
   /**
@@ -402,6 +431,16 @@ public final class ChessGameImpl implements ChessGame {
   @Override
   public boolean hasKingMoved(PieceColor color) {
     return castlingStatus.hasKingMoved(color);
+  }
+
+  @Override
+  public boolean hasUsedKingsLeap(PieceColor color) {
+    return castlingStatus.hasUsedKingsLeap(color);
+  }
+
+  @Override
+  public void markKingsLeapUsed(PieceColor color) {
+    castlingStatus.markKingsLeapUsed(color);
   }
 
   @Override

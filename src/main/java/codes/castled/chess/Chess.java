@@ -12,6 +12,7 @@ import codes.castled.chess.listener.NetworkPresenceListener;
 import codes.castled.chess.net.ChessNetwork;
 import codes.castled.chess.net.NetworkFactory;
 import codes.castled.chess.net.WebParticipant;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.TimeMode;
 import codes.castled.chess.pack.ResourcePackService;
 import codes.castled.chess.request.DuelRequestService;
@@ -38,10 +39,11 @@ public final class Chess extends JavaPlugin {
     network = NetworkFactory.create(this, settings.getNetworkSettings());
     network.start();
 
-    EngineFactory engine = new EngineFactory(settings.isVerticalCastlingEnabled());
+    EasterEggRules easterEggRules = settings.getEasterEggRules();
+    EngineFactory engine = new EngineFactory(easterEggRules);
     SoundPlayer sound = new SoundPlayer(this, settings);
     ChessViewFactory viewFactory = new ChessViewFactory(
-            this, ui, messages, engine.moveCalculator(), settings.isVerticalCastlingEnabled());
+            this, ui, messages, engine.moveCalculator(), easterEggRules);
     gameService =
         new GameService(
             this,

@@ -7,6 +7,7 @@ import codes.castled.chess.game.GameStatusEvaluator;
 import codes.castled.chess.util.Scheduler;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.move.Move;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.piece.Piece;
@@ -53,7 +54,7 @@ public final class DialogChessView implements ChessView, BoardClicks {
       MoveCalculator moveCalculator,
       GameStatusEvaluator status,
       MessageConfig messages,
-      boolean verticalCastling) {
+      EasterEggRules easterEggRules) {
     this.game = game;
     this.plugin = plugin;
     PieceGlyph glyph = new PieceGlyph(settings.useGlyphs());
@@ -66,7 +67,7 @@ public final class DialogChessView implements ChessView, BoardClicks {
             .build();
     this.boardDialog =
         new PaperBoardDialog(
-            settings, glyph, moveCalculator, status, messages, options, verticalCastling);
+            settings, glyph, moveCalculator, status, messages, options, easterEggRules);
     this.promotionDialog = new PaperPromotionDialog(settings, glyph, messages, options);
   }
 

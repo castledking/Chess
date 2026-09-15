@@ -7,6 +7,7 @@ import codes.castled.chess.game.ChessGameHolder;
 import codes.castled.chess.ui.inventory.InventoryChessView;
 import codes.castled.chess.util.Platform;
 import codes.castled.chess.game.GameStatusEvaluator;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 
 /** Constructs the Paper dialog {@link ChessView} for each game. */
@@ -17,20 +18,20 @@ public final class ChessViewFactory {
   private final MessageConfig messageConfig;
   private final MoveCalculator moveCalculator;
 
-  /** Whether the vertical castling easter egg is enabled, needed to highlight its premove. */
-  private final boolean verticalCastling;
+  /** The easter eggs in play, needed to highlight the premoves they unlock. */
+  private final EasterEggRules easterEggRules;
 
   public ChessViewFactory(
       Chess plugin,
       UiConfig uiConfig,
       MessageConfig messageConfig,
       MoveCalculator moveCalculator,
-      boolean verticalCastling) {
+      EasterEggRules easterEggRules) {
     this.plugin = plugin;
     this.uiConfig = uiConfig;
     this.messageConfig = messageConfig;
     this.moveCalculator = moveCalculator;
-    this.verticalCastling = verticalCastling;
+    this.easterEggRules = easterEggRules;
   }
 
   /**
@@ -49,7 +50,7 @@ public final class ChessViewFactory {
 
     GameStatusEvaluator status = new GameStatusEvaluator(moveCalculator);
     return new DialogChessView(
-        game, plugin, settings, moveCalculator, status, messageConfig, verticalCastling);
+        game, plugin, settings, moveCalculator, status, messageConfig, easterEggRules);
   }
 
   /**

@@ -15,6 +15,16 @@ import java.util.List;
 /** Calculates possible pawn moves. */
 public final class PawnMoveCalculator extends PieceMoveCalculator {
 
+  /**
+   * Whether the 1500s rules are played: pawns advance a single square only, so there is no
+   * double first step — and with nothing able to pass, no en passant either.
+   */
+  private final boolean singleStepPawns;
+
+  public PawnMoveCalculator(boolean singleStepPawns) {
+    this.singleStepPawns = singleStepPawns;
+  }
+
   @Override
   public List<Square> getMoves(ChessBoard board, Square pieceSquare, Piece pawn) {
     List<Square> squares = new ArrayList<>();
@@ -27,7 +37,9 @@ public final class PawnMoveCalculator extends PieceMoveCalculator {
 
     addDiagonalSquares(board, squares, pieceSquare, direction, pawn.color());
 
-    addEnPassantSquares(board, squares, pieceSquare, direction, pawn.color());
+    if (!singleStepPawns) {
+      addEnPassantSquares(board, squares, pieceSquare, direction, pawn.color());
+    }
 
     return squares;
   }
@@ -52,7 +64,8 @@ public final class PawnMoveCalculator extends PieceMoveCalculator {
       squares.add(verticalSquare);
 
       Square doubleVerticalSquare = SquareUtils.offsetOrNull(pieceSquare, direction * 2, 0);
-      if (onStartRow
+      if (!singleStepPawns
+          && onStartRow
           && doubleVerticalSquare != null
           && board.getPiece(doubleVerticalSquare) == null) {
         squares.add(doubleVerticalSquare);

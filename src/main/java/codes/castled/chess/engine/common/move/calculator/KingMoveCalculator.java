@@ -42,6 +42,39 @@ public final class KingMoveCalculator extends PieceMoveCalculator {
   }
 
   /**
+   * Calculates the squares of the King's Leap: the knight-shaped jumps a king may make once per
+   * game under the 1500s rules.
+   *
+   * <p>Everything except check is filtered here, exactly as for a one-square step. Whether the
+   * leap is still available this game is history the board cannot know, so the caller decides;
+   * landing in check is left to the caller's self-check validation too.
+   *
+   * @param board the associated chess board
+   * @param pieceSquare the square of the king
+   * @param kingColor the color of the king
+   * @return the squares a leap could land on from here
+   */
+  public List<Square> getLeapSquares(ChessBoard board, Square pieceSquare, PieceColor kingColor) {
+    List<Square> squares = new ArrayList<>();
+
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, 2, 1));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, 2, -1));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, -2, 1));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, -2, -1));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, 1, 2));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, 1, -2));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, -1, 2));
+    squares.add(SquareUtils.offsetOrNull(pieceSquare, -1, -2));
+
+    return squares.stream()
+        .filter(Objects::nonNull)
+        .filter(targetSquare -> !isOccupiedByOwnPiece(board, targetSquare, kingColor))
+        .filter(targetSquare -> !isOccupiedByEnemyKing(board, targetSquare, kingColor))
+        .filter(targetSquare -> !isNextToEnemyKing(board, targetSquare, kingColor))
+        .toList();
+  }
+
+  /**
    * Filters out every square that the king is not allowed to move to.
    *
    * @param squares the list of possible moves

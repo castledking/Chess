@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.move.MoveResultType;
 import codes.castled.chess.engine.common.board.FenCodec;
 import codes.castled.chess.engine.common.move.UciMove;
@@ -74,7 +75,7 @@ class SearchBotTest {
   void aFinishedPositionYieldsNoMove() {
     // Black is mated and has nothing to play.
     String fen = "6k1/5ppp/8/8/8/8/8/R5K1 b - - 1 1";
-    ChessGame position = new EngineFactory(false).positionFromFen(fen);
+    ChessGame position = new EngineFactory(EasterEggRules.STANDARD).positionFromFen(fen);
 
     // Sanity: black really does have moves here, so the next case is the meaningful one.
     assertTrue(position.getChessBoard().getColoredPieces(
@@ -121,12 +122,12 @@ class SearchBotTest {
 
   private static SearchBot bot(int level) {
     return new SearchBot(
-        UUID.randomUUID(), new BotDifficulty(level), new EngineFactory(false), new Random(SEED));
+        UUID.randomUUID(), new BotDifficulty(level), new EngineFactory(EasterEggRules.STANDARD), new Random(SEED));
   }
 
   /** Replays the move onto a fresh copy of the position to prove the engine accepts it. */
   private static boolean isLegal(String fen, String notation) {
-    ChessGame position = new EngineFactory(false).positionFromFen(fen);
+    ChessGame position = new EngineFactory(EasterEggRules.STANDARD).positionFromFen(fen);
     UciMove move = UciMove.parse(notation);
     UUID mover = position.getCurrentTurn();
 

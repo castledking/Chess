@@ -152,6 +152,21 @@ public interface ChessGame {
   boolean hasKingMoved(PieceColor color);
 
   /**
+   * @param color the color of the king
+   * @return whether the king with the given color has already spent its once-per-game King's
+   *     Leap, the single knight move the 1500s rules allow it
+   */
+  boolean hasUsedKingsLeap(PieceColor color);
+
+  /**
+   * Records that the king with the given color has made its King's Leap. A no-op concern for
+   * callers when the 1500s rules are off: no legal move can then have a knight's geometry.
+   *
+   * @param color the color of the king that has just leapt
+   */
+  void markKingsLeapUsed(PieceColor color);
+
+  /**
    * Gets the squares of the rooks that are still eligible to castle, which includes rooks that
    * appeared through promotion.
    *

@@ -98,5 +98,16 @@ easter-egg:
   # the king moves two squares towards it and the rook lands on the square the king crossed
   # (e.g. white Ke1 with a promoted rook on e8 becomes Ke3, Re2). All the normal castling
   # restrictions still apply — the king must not have moved, the file between them must be
-  # empty, and the king may not castle out of, through, or into check.
+  #   empty, and the king may not castle out of, through, or into check.
   enable-vertical-castling: false
+  # The 1500s rules — chess as played before castling and the double pawn step had been
+  # invented:
+  #   - No castling of any kind. This beats the vertical castling above: if both are enabled,
+  #     neither form is allowed.
+  #   - Pawns advance one square only; there is no double first step.
+  #   - No en passant (with no double step there is nothing to capture en passant anyway).
+  #   - Once per game each king may perform the King's Leap: a single knight move. It is
+  #     otherwise an ordinary king move — it may capture, it may not land on a square of its
+  #     own pieces or next to the enemy king, and it may not leave, walk into, or sit out of
+  #     check any more than a step could.
+  enable-1500s-rules: false

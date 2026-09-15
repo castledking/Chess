@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.TimeMode;
 import codes.castled.chess.engine.api.move.MoveResultType;
 import codes.castled.chess.engine.api.piece.PieceColor;
@@ -204,7 +205,7 @@ class FenCodecTest {
   /* Helpers ---------------------------------------------------------- */
 
   private static ChessGame newGame() {
-    return new EngineFactory(false)
+    return new EngineFactory(EasterEggRules.STANDARD)
         .chessGameService()
         .createGame(WHITE, BLACK, TimeMode.TEN)
         .game();

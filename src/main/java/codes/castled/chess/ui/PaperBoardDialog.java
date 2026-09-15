@@ -6,6 +6,7 @@ import codes.castled.chess.game.PremoveMoveCalculator;
 import codes.castled.chess.engine.api.board.ChessBoard;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.move.Move;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.piece.Piece;
@@ -57,8 +58,8 @@ public final class PaperBoardDialog {
   private final DialogLabels labels;
   private final ClickCallback.Options clickOptions;
 
-  /** Whether the vertical castling easter egg is enabled, so its premove can be highlighted. */
-  private final boolean verticalCastling;
+  /** The easter eggs in play, so the premoves they unlock can be highlighted. */
+  private final EasterEggRules easterEggRules;
 
   public PaperBoardDialog(
       DialogSettings settings,
@@ -67,8 +68,8 @@ public final class PaperBoardDialog {
       GameStatusEvaluator status,
       DialogLabels labels,
       ClickCallback.Options clickOptions,
-      boolean verticalCastling) {
-    this.verticalCastling = verticalCastling;
+      EasterEggRules easterEggRules) {
+    this.easterEggRules = easterEggRules;
     this.settings = settings;
     this.glyph = glyph;
     this.moveCalculator = moveCalculator;
@@ -112,14 +113,14 @@ public final class PaperBoardDialog {
       Piece ghostPiece = sim.get(ghostSel);
       legal = ghostPiece != null
           ? ChessGameHolder.pseudoLegalMoves(
-              chessGame, verticalCastling, sim, ghostSel, ghostPiece.color())
+              chessGame, easterEggRules, sim, ghostSel, ghostPiece.color())
           : List.of();
       selected = ghostSel;
     } else if (selected != null && settings.showLegalMoves() && !state.isSpectator()) {
       if (viewerOnTurn) {
         legal = moveCalculator.getPossibleMoves(chessGame, selected);
       } else {
-        legal = PremoveMoveCalculator.getPremoveMoves(chessGame, selected, verticalCastling);
+        legal = PremoveMoveCalculator.getPremoveMoves(chessGame, selected, easterEggRules);
       }
     } else {
       legal = List.of();

@@ -4,6 +4,7 @@ import codes.castled.chess.engine.api.board.ChessBoard;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
 import codes.castled.chess.engine.api.game.ChessGameService;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.common.board.FenCodec;
@@ -37,21 +38,21 @@ public final class EngineFactory {
   private final MoveValidator validator;
 
   /**
-   * @param verticalCastling whether the vertical castling easter egg is enabled
+   * @param easterEggRules which variant rules the engine should play with
    */
-  public EngineFactory(boolean verticalCastling) {
+  public EngineFactory(EasterEggRules easterEggRules) {
     Lazy lazy = new Lazy();
     MoveValidator validator = new MoveValidator(lazy);
     MoveCalculatorImpl calculator =
         new MoveCalculatorImpl(
             validator,
-            new PawnMoveCalculator(),
+            new PawnMoveCalculator(easterEggRules.rules1500s()),
             new RookMoveCalculator(),
             new BishopMoveCalculator(),
             new KnightMoveCalculator(),
             new QueenMoveCalculator(),
             new KingMoveCalculator(),
-            verticalCastling);
+            easterEggRules);
     lazy.delegate = calculator;
 
     this.moveCalculator = calculator;

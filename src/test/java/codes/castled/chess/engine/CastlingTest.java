@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.GameCreationResult;
 import codes.castled.chess.engine.api.game.GameCreationResultType;
 import codes.castled.chess.engine.api.game.TimeMode;
@@ -379,7 +380,8 @@ class CastlingTest {
             fixture.board, List.of(new Move(null, E1, new Square('1', 'D'))));
     List<Square> fromProjected =
         ChessGameHolder.pseudoLegalMoves(
-            fixture.game, false, projected, new Square('1', 'D'), PieceColor.WHITE);
+            fixture.game, new EasterEggRules(false, false), projected, new Square('1', 'D'),
+            PieceColor.WHITE);
 
     assertFalse(fromProjected.contains(new Square('1', 'B')));
     assertFalse(fromProjected.contains(new Square('1', 'F')));
@@ -398,7 +400,8 @@ class CastlingTest {
             fixture.board, List.of(new Move(null, H1, new Square('5', 'H'))));
 
     assertFalse(
-        ChessGameHolder.pseudoLegalMoves(fixture.game, false, projected, E1, PieceColor.WHITE)
+        ChessGameHolder.pseudoLegalMoves(
+                fixture.game, new EasterEggRules(false, false), projected, E1, PieceColor.WHITE)
             .contains(new Square('1', 'G')));
   }
 
@@ -413,7 +416,7 @@ class CastlingTest {
   }
 
   private Fixture emptyBoard(boolean verticalCastling) {
-    EngineFactory engine = new EngineFactory(verticalCastling);
+    EngineFactory engine = new EngineFactory(new EasterEggRules(verticalCastling, false));
     GameCreationResult result =
         engine.chessGameService().createGame(WHITE, BLACK, TimeMode.TEN);
     assertEquals(GameCreationResultType.SUCCESS, result.type());
@@ -475,7 +478,8 @@ class CastlingTest {
     }
 
     private List<Square> premovesFrom(Square square, boolean verticalCastling) {
-      return PremoveMoveCalculator.getPremoveMoves(game, square, verticalCastling);
+      return PremoveMoveCalculator.getPremoveMoves(
+          game, square, new EasterEggRules(verticalCastling, false));
     }
 
     private Piece pieceAt(Square square) {

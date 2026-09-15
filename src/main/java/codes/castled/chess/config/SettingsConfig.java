@@ -1,6 +1,7 @@
 package codes.castled.chess.config;
 
 import codes.castled.chess.Chess;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.game.ChessGameEvent;
 import codes.castled.chess.net.HubNetwork;
 import org.bukkit.NamespacedKey;
@@ -54,6 +55,20 @@ public final class SettingsConfig extends Config {
    */
   public boolean isVerticalCastlingEnabled() {
     return config.getBoolean("easter-egg.enable-vertical-castling", false);
+  }
+
+  /**
+   * @return whether the 1500s rules easter egg is played: no castling at all (vertical castling
+   *     included), pawns advance a single square only, no en passant, and one King's Leap per
+   *     game — a single knight move each king may make
+   */
+  public boolean is1500sRulesEnabled() {
+    return config.getBoolean("easter-egg.enable-1500s-rules", false);
+  }
+
+  /** @return the easter-egg toggles as one value, ready to hand to the engine */
+  public EasterEggRules getEasterEggRules() {
+    return new EasterEggRules(isVerticalCastlingEnabled(), is1500sRulesEnabled());
   }
 
   /**

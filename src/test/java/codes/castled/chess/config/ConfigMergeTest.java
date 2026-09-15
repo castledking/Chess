@@ -97,6 +97,7 @@ class ConfigMergeTest {
           "network.server-name",
           "network.server-key",
           "easter-egg.enable-vertical-castling",
+          "easter-egg.enable-1500s-rules",
           "ui.mode",
           "ui.dialog.show-legal-moves",
           "resource-pack.use-resourcepack",

@@ -9,6 +9,7 @@ import codes.castled.chess.wiring.EngineFactory;
 import codes.castled.chess.engine.api.board.ChessBoard;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.GameCreationResult;
 import codes.castled.chess.engine.api.game.GameCreationResultType;
 import codes.castled.chess.engine.api.game.TimeMode;
@@ -70,7 +71,7 @@ class PremoveTest {
 
   @Test
   void queuedPremoveIsPlayedOnceItsPlayersTurnArrives() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
 
@@ -100,7 +101,7 @@ class PremoveTest {
 
   @Test
   void capturePremovePlaysOnceTheTurnArrives() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
 
@@ -126,7 +127,7 @@ class PremoveTest {
 
   @Test
   void premoveThatBecomesIllegalIsDiscarded() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
 
@@ -159,7 +160,7 @@ class PremoveTest {
 
   @Test
   void eightPawnPremoveStormFillsTheFourthAndFifthRanks() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     ChessGame game = newGame(engine);
     ChessBoard board = game.getChessBoard();
 
@@ -197,7 +198,7 @@ class PremoveTest {
 
   @Test
   void scholarsMateByPremove() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     MoveCalculator calculator = engine.moveCalculator();
     ChessGame game = newGame(engine);
     ChessBoard board = game.getChessBoard();
@@ -244,7 +245,7 @@ class PremoveTest {
 
   @Test
   void premoveStackDiscardsEverythingWhenTheHeadBecomesIllegal() {
-    EngineFactory engine = new EngineFactory(false);
+    EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
     ChessGame game = newGame(engine);
     ChessBoard board = game.getChessBoard();
 

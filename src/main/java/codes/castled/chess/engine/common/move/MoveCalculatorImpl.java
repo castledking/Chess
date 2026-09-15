@@ -3,6 +3,7 @@ package codes.castled.chess.engine.common.move;
 import codes.castled.chess.engine.api.board.ChessBoard;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.api.piece.PieceType;
@@ -28,8 +29,8 @@ public final class MoveCalculatorImpl implements MoveCalculator {
   private final QueenMoveCalculator queenMoveCalculator;
   private final KingMoveCalculator kingMoveCalculator;
 
-  /** Whether the vertical castling easter egg is enabled. */
-  private final boolean verticalCastling;
+  /** The easter eggs that bend the rules this calculator enforces. */
+  private final EasterEggRules easterEggRules;
 
   public MoveCalculatorImpl(
       MoveValidator moveValidator,
@@ -39,8 +40,8 @@ public final class MoveCalculatorImpl implements MoveCalculator {
       KnightMoveCalculator knightMoveCalculator,
       QueenMoveCalculator queenMoveCalculator,
       KingMoveCalculator kingMoveCalculator,
-      boolean verticalCastling) {
-    this.verticalCastling = verticalCastling;
+      EasterEggRules easterEggRules) {
+    this.easterEggRules = easterEggRules;
     this.moveValidator = moveValidator;
     this.pawnMoveCalculator = pawnMoveCalculator;
     this.rookMoveCalculator = rookMoveCalculator;
@@ -61,16 +62,26 @@ public final class MoveCalculatorImpl implements MoveCalculator {
 
     ChessBoardImpl boardImpl = (ChessBoardImpl) chessBoard;
 
+    // Candidate destinations before the self-check filter. The King's Leap belongs here rather
+    // than after it, so a leap is held to the same standard as a step: it may not leave the
+    // king in check.
+    List<Square> candidates = new ArrayList<>(getRawMoves(boardImpl, pieceSquare));
+    if (piece.type() == PieceType.KING && easterEggRules.rules1500s()) {
+      addKingsLeapMoves(chessGame, candidates, pieceSquare, piece.color());
+    }
+
     List<Square> possibleMoves =
         new ArrayList<>(
-            getRawMoves(boardImpl, pieceSquare).stream()
+            candidates.stream()
                 .filter(
                     targetSquare ->
                         !moveValidator.wouldCauseSelfCheck(
                             boardImpl, new Move(piece, pieceSquare, targetSquare), piece.color()))
                 .toList());
 
-    if (piece.type() == PieceType.KING) {
+    // Castling is a 1500s anachronism: with those rules on it is never offered, which turns
+    // the vertical castling easter egg off with it.
+    if (piece.type() == PieceType.KING && !easterEggRules.rules1500s()) {
       addCastlingMoves(chessGame, possibleMoves, pieceSquare, piece.color());
     }
 
@@ -109,6 +120,28 @@ public final class MoveCalculatorImpl implements MoveCalculator {
     List<Square> rawMoves = new ArrayList<>();
     pieceSquares.forEach(pieceSquare -> rawMoves.addAll(getRawMoves(chessBoard, pieceSquare)));
     return rawMoves;
+  }
+
+  /**
+   * Adds the King's Leap destinations — a single knight move each king may make once per game
+   * under the 1500s rules — to the given list.
+   *
+   * <p>Occupancy, enemy-king adjacency and captures are filtered by {@link KingMoveCalculator};
+   * whether the leap is spent is history only the game knows. Check is deliberately not checked
+   * here: the caller's self-check filter applies to everything in the list it feeds.
+   *
+   * @param chessGame the played game, which owns the per-colour leap state
+   * @param squares the candidate destination list to add to
+   * @param kingSquare the square the king stands on
+   * @param color the color of the king
+   */
+  private void addKingsLeapMoves(
+      ChessGame chessGame, List<Square> squares, Square kingSquare, PieceColor color) {
+    if (chessGame.hasUsedKingsLeap(color)) {
+      return;
+    }
+
+    squares.addAll(kingMoveCalculator.getLeapSquares(chessGame.getChessBoard(), kingSquare, color));
   }
 
   /**
@@ -175,7 +208,7 @@ public final class MoveCalculatorImpl implements MoveCalculator {
     boolean alongRank = rowStep == 0 && columnStep != 0;
     boolean alongFile = columnStep == 0 && rowStep != 0;
 
-    if (alongFile && !(verticalCastling && rowStep == forwardDirection(color))) {
+    if (alongFile && !(easterEggRules.verticalCastling() && rowStep == forwardDirection(color))) {
       return null;
     }
 

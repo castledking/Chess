@@ -8,6 +8,7 @@ import codes.castled.chess.ui.ChessViewFactory;
 import codes.castled.chess.engine.api.board.ChessBoard;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.move.Move;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.move.MoveResult;
@@ -45,6 +46,11 @@ import java.util.UUID;
  */
 @Getter
 public final class ChessGameHolder {
+
+  /** The eight knight jumps, shared by the knight case and the 1500s King's Leap. */
+  private static final int[][] KNIGHT_OFFSETS = {
+    {-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}
+  };
 
   private final Chess plugin;
   private final GameService gameService;
@@ -268,7 +274,7 @@ public final class ChessGameHolder {
     if (!hasQueuedPremoves(playerId)) {
       List<Square> possible =
           PremoveMoveCalculator.getPremoveMoves(
-              chessGame, from, settingsConfig.isVerticalCastlingEnabled());
+              chessGame, from, settingsConfig.getEasterEggRules());
       if (possible.isEmpty() || !possible.contains(to)) {
         return false;
       }
@@ -597,11 +603,12 @@ public final class ChessGameHolder {
    * Computes pseudo-legal destination squares for a piece at {@code from} based on the
    * simulated board after the premove chain. Own pieces may be captured (self-capture);
    * no check or en-passant validation. Castling is offered on rights alone, looked up
-   * against the simulated position so a rook already premoved away stops offering it.
+   * against the simulated position so a rook already premoved away stops offering it; under
+   * the 1500s rules it never is, and the King's Leap takes its place while unspent.
    */
   public static List<Square> pseudoLegalMoves(
       ChessGame game,
-      boolean verticalCastling,
+      EasterEggRules easterEggRules,
       Map<Square, Piece> sim,
       Square from,
       PieceColor color) {
@@ -612,8 +619,7 @@ public final class ChessGameHolder {
     List<Square> moves = new ArrayList<>();
     switch (piece.type()) {
       case KNIGHT -> {
-        int[][] offsets = {{-2,-1},{-2,1},{-1,-2},{-1,2},{1,-2},{1,2},{2,-1},{2,1}};
-        for (int[] o : offsets) {
+        for (int[] o : KNIGHT_OFFSETS) {
           Square d = SquareUtils.offsetOrNull(from, o[0], o[1]);
           if (d != null) {
             moves.add(d);
@@ -631,13 +637,25 @@ public final class ChessGameHolder {
             moves.add(d);
           }
         }
-        PremoveMoveCalculator.addCastlingMoves(
-            game, verticalCastling, from, color, sim::get, moves);
+        if (easterEggRules.rules1500s()) {
+          if (!game.hasUsedKingsLeap(color)) {
+            for (int[] o : KNIGHT_OFFSETS) {
+              Square d = SquareUtils.offsetOrNull(from, o[0], o[1]);
+              if (d != null) {
+                moves.add(d);
+              }
+            }
+          }
+        } else {
+          PremoveMoveCalculator.addCastlingMoves(
+              game, easterEggRules.verticalCastling(), from, color, sim::get, moves);
+        }
       }
       case PAWN -> {
         int dir = color == PieceColor.WHITE ? 1 : -1;
         int startRow = color == PieceColor.WHITE ? 1 : 6;
         int promRow = color == PieceColor.WHITE ? 7 : 0;
+        boolean singleStepPawns = easterEggRules.rules1500s();
         int r = from.getRowIndex();
         int c = from.getColumnIndex();
         // Forward one — must be empty (pawns cannot capture forward)
@@ -647,7 +665,7 @@ public final class ChessGameHolder {
           if (fwd1Piece == null && fwd1.getRowIndex() != promRow) {
             moves.add(fwd1);
             // Forward two from start
-            if (r == startRow) {
+            if (!singleStepPawns && r == startRow) {
               Square fwd2 = SquareUtils.offsetOrNull(from, dir * 2, 0);
               if (fwd2 != null) {
                 Piece fwd2Piece = sim.get(fwd2);

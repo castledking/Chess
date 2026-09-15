@@ -3,6 +3,7 @@ package codes.castled.chess.game;
 import codes.castled.chess.engine.api.board.ChessBoard;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.piece.Piece;
 import codes.castled.chess.engine.api.piece.PieceColor;
 import codes.castled.chess.engine.api.piece.PieceType;
@@ -25,6 +26,8 @@ import java.util.function.Function;
  *       edges stop the slide, since pieces may move away.
  *   <li>Offers castling on rights alone, without checking that the path is clear or that the
  *       king would pass through check — the opponent's single move can change either.
+ *   <li>Under the 1500s rules, offers no castling at all and instead offers the King's Leap on
+ *       availability alone: once spent it never comes back, so only that is checked.
  *   <li>Does not validate check or en passant — those are enforced at play time by the
  *       engine's strict move validation.
  * </ul>
@@ -34,7 +37,7 @@ public final class PremoveMoveCalculator {
   private PremoveMoveCalculator() {}
 
   public static List<Square> getPremoveMoves(
-      ChessGame game, Square from, boolean verticalCastling) {
+      ChessGame game, Square from, EasterEggRules easterEggRules) {
     ChessBoard board = game.getChessBoard();
     Piece piece = board.getPiece(from);
     if (piece == null) {
@@ -51,9 +54,16 @@ public final class PremoveMoveCalculator {
       case QUEEN -> addSlidingMoves(board, from, color, moves, true, true);
       case KING -> {
         addKingMoves(board, from, color, moves);
-        addCastlingMoves(game, verticalCastling, from, color, board::getPiece, moves);
+        if (easterEggRules.rules1500s()) {
+          if (!game.hasUsedKingsLeap(color)) {
+            addKnightMoves(board, from, color, moves);
+          }
+        } else {
+          addCastlingMoves(game, easterEggRules.verticalCastling(), from, color, board::getPiece,
+              moves);
+        }
       }
-      case PAWN -> addPawnMoves(game, from, color, moves);
+      case PAWN -> addPawnMoves(game, from, color, moves, easterEggRules.rules1500s());
     }
 
     return moves;
@@ -182,11 +192,12 @@ public final class PremoveMoveCalculator {
 
   /**
    * Pawn: forward 1 (must be empty), forward 2 from starting rank (both squares must be
-   * empty), diagonal 1 (always allowed — the opponent might place a piece there). Promotion
-   * squares are excluded (ambiguous for premoves).
+   * empty, unless the 1500s rules keep pawns to single steps), diagonal 1 (always allowed —
+   * the opponent might place a piece there). Promotion squares are excluded (ambiguous for
+   * premoves).
    */
   private static void addPawnMoves(
-      ChessGame game, Square from, PieceColor color, List<Square> moves) {
+      ChessGame game, Square from, PieceColor color, List<Square> moves, boolean singleStepPawns) {
     ChessBoard board = game.getChessBoard();
     boolean white = color == PieceColor.WHITE;
     int forward = white ? 1 : -1;
@@ -200,7 +211,7 @@ public final class PremoveMoveCalculator {
         moves.add(fwd1);
       }
       // Forward 2 from starting rank (both squares must be empty)
-      if (from.getRowIndex() == startRow) {
+      if (!singleStepPawns && from.getRowIndex() == startRow) {
         Square fwd2 = SquareUtils.offsetOrNull(from, forward * 2, 0);
         if (fwd2 != null && board.getPiece(fwd2) == null) {
           moves.add(fwd2);

@@ -26,12 +26,29 @@ public final class CastlingStatus {
       new HashMap<>(
           Map.of(PieceColor.WHITE, new HashSet<>(), PieceColor.BLACK, new HashSet<>()));
 
+  /**
+   * Whether each colour has spent its King's Leap — the one knight move its king may make per
+   * game under the 1500s rules.
+   */
+  private final Map<PieceColor, Boolean> kingsLeapUsed =
+      new HashMap<>(Map.of(PieceColor.WHITE, false, PieceColor.BLACK, false));
+
   public void markKingMoved(PieceColor color) {
     kingMoved.put(color, true);
   }
 
   public boolean hasKingMoved(PieceColor color) {
     return kingMoved.get(color);
+  }
+
+  /** @param color the colour of the king that has just leapt */
+  public void markKingsLeapUsed(PieceColor color) {
+    kingsLeapUsed.put(color, true);
+  }
+
+  /** @param color the colour of the king to ask about */
+  public boolean hasUsedKingsLeap(PieceColor color) {
+    return kingsLeapUsed.get(color);
   }
 
   /**

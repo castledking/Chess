@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.TimeMode;
 import codes.castled.chess.engine.api.move.MoveCalculator;
 import codes.castled.chess.engine.api.move.MoveResultType;
@@ -60,7 +61,7 @@ class FenRoundTripTest {
     move(played, WHITE, new Square('1', 'G'), new Square('3', 'F'));
 
     ChessGame loaded = load(played.toFen());
-    MoveCalculator calculator = new EngineFactory(false).moveCalculator();
+    MoveCalculator calculator = new EngineFactory(EasterEggRules.STANDARD).moveCalculator();
 
     for (char row = '1'; row <= '8'; row++) {
       for (char column = 'A'; column <= 'H'; column++) {
@@ -77,7 +78,7 @@ class FenRoundTripTest {
   void aLoadedEnPassantTargetIsActuallyCapturable() {
     // White has just played d2-d4; black's c4 pawn may take en passant on d3.
     ChessGame game = load("rnbqkbnr/pp1ppppp/8/8/2pPP3/8/PPP2PPP/RNBQKBNR b KQkq d3 0 3");
-    MoveCalculator calculator = new EngineFactory(false).moveCalculator();
+    MoveCalculator calculator = new EngineFactory(EasterEggRules.STANDARD).moveCalculator();
 
     assertTrue(
         calculator.getPossibleMoves(game, new Square('4', 'C')).contains(new Square('3', 'D')),
@@ -88,7 +89,7 @@ class FenRoundTripTest {
   void castlingRightsComeFromTheFenNotFromWhereTheRooksHappenToBe() {
     // Both rooks are home, but the FEN grants white only the queen side.
     ChessGame game = load("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 20");
-    MoveCalculator calculator = new EngineFactory(false).moveCalculator();
+    MoveCalculator calculator = new EngineFactory(EasterEggRules.STANDARD).moveCalculator();
 
     var kingMoves = calculator.getPossibleMoves(game, new Square('1', 'E'));
 
@@ -125,11 +126,11 @@ class FenRoundTripTest {
   /* Helpers ----------------------------------------------------------- */
 
   private static ChessGame load(String fen) {
-    return new EngineFactory(false).positionFromFen(fen);
+    return new EngineFactory(EasterEggRules.STANDARD).positionFromFen(fen);
   }
 
   private static ChessGame newGame() {
-    return new EngineFactory(false)
+    return new EngineFactory(EasterEggRules.STANDARD)
         .chessGameService()
         .createGame(WHITE, BLACK, TimeMode.TEN)
         .game();

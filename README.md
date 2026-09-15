@@ -88,6 +88,12 @@ the king crossed, so white `Ke1` with a promoted rook on `e8` becomes `Ke3`, `Re
 castling restriction still applies: the king must not have moved, the file between them must be
 empty, and the king may not castle out of, through, or into check. Off by default.
 
+Set `easter-egg.enable-1500s-rules: true` to play chess as it stood around 1500: no castling at all
+(this also switches vertical castling off should both be enabled), pawns advance one square only,
+no en passant, and once per game each king may perform the King's Leap — a single knight move,
+otherwise held to every rule a normal king move is: it may capture, but it may not land on its own
+pieces, next to the enemy king, or anywhere that would leave the king in check. Off by default.
+
 ## Building
 
 Chess uses Java 21 and Gradle. The rules engine is part of this repository, so there is nothing

@@ -8,6 +8,7 @@ import codes.castled.chess.game.GameStatusEvaluator;
 import codes.castled.chess.wiring.EngineFactory;
 import codes.castled.chess.engine.api.board.Square;
 import codes.castled.chess.engine.api.game.ChessGame;
+import codes.castled.chess.engine.api.game.EasterEggRules;
 import codes.castled.chess.engine.api.game.GameCreationResult;
 import codes.castled.chess.engine.api.game.GameCreationResultType;
 import codes.castled.chess.engine.api.game.TimeMode;
@@ -54,7 +55,7 @@ class DialogContentGrowthTest {
 
   private static final PlainTextComponentSerializer PLAIN = PlainTextComponentSerializer.plainText();
 
-  private final EngineFactory engine = new EngineFactory(false);
+  private final EngineFactory engine = new EngineFactory(EasterEggRules.STANDARD);
   private final GameStatusEvaluator status = new GameStatusEvaluator(engine.moveCalculator());
   private final DialogSettings settings = defaultSettings();
   private final PaperBoardDialog board =
@@ -65,7 +66,7 @@ class DialogContentGrowthTest {
           status,
           fakeLabels(),
           clickOptions(),
-          false);
+          EasterEggRules.STANDARD);
   private final PaperPromotionDialog promotion =
       new PaperPromotionDialog(settings, new PieceGlyph(false), fakeLabels(), clickOptions());
 
