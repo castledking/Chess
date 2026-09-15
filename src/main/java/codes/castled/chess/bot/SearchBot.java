@@ -14,8 +14,10 @@ import codes.castled.chess.wiring.EngineFactory;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,6 +32,10 @@ import java.util.UUID;
  * but it is exactly right, because a FEN carries castling rights and the en passant target — a
  * hand-rolled undo would have to reproduce both and would quietly mis-evaluate any line involving
  * them.
+ *
+ * <p>The one thing a FEN cannot carry is whether a king has spent its King's Leap under the 1500s
+ * rules, so that travels alongside it: every reloaded position has the spent leaps re-applied.
+ * Without it the bot would believe both leaps available, choose one the game refuses, and resign.
  *
  * <p>Search is iteratively deepened under a wall-clock budget, so a move always exists even when
  * the hardware is slow, and the bot never thinks for longer than a player will wait.
@@ -68,7 +74,13 @@ public final class SearchBot implements ChessBot {
   @Nullable
   @Override
   public String chooseMove(String fen) {
-    ChessGame position = engine.positionFromFen(fen);
+    return chooseMove(fen, Set.of());
+  }
+
+  @Nullable
+  @Override
+  public String chooseMove(String fen, Set<PieceColor> kingsLeapSpent) {
+    ChessGame position = load(fen, kingsLeapSpent);
     PieceColor side = sideToMove(position);
 
     List<ScoredMove> rootMoves = rootMoves(position, side);
@@ -115,12 +127,13 @@ public final class SearchBot implements ChessBot {
       List<ScoredMove> moves, ChessGame position, PieceColor side, int depth, long deadline) {
 
     String fen = position.toFen();
+    Set<PieceColor> spent = kingsLeapSpent(position);
     for (ScoredMove move : moves) {
       if (System.currentTimeMillis() > deadline) {
         return false;
       }
 
-      ChessGame after = play(fen, move);
+      ChessGame after = play(fen, spent, move);
       if (after == null) {
         move.score = Integer.MIN_VALUE;
         continue;
@@ -147,10 +160,11 @@ public final class SearchBot implements ChessBot {
     }
 
     String fen = position.toFen();
+    Set<PieceColor> spent = kingsLeapSpent(position);
     int best = -CHECKMATE_SCORE;
 
     for (ScoredMove move : moves) {
-      ChessGame after = play(fen, move);
+      ChessGame after = play(fen, spent, move);
       if (after == null) {
         continue;
       }
@@ -169,11 +183,14 @@ public final class SearchBot implements ChessBot {
   }
 
   /**
-   * @return the position after the move, or null if it turned out not to be playable
+   * @param fen the position before the move
+   * @param spent the colours whose King's Leap is already used, which the FEN cannot say
+   * @return the position after the move, or null if it turned out not to be playable. A leap
+   *     played here is recorded by the game itself, so {@link #kingsLeapSpent} reads it back.
    */
   @Nullable
-  private ChessGame play(String fen, ScoredMove move) {
-    ChessGame position = engine.positionFromFen(fen);
+  private ChessGame play(String fen, Set<PieceColor> spent, ScoredMove move) {
+    ChessGame position = load(fen, spent);
     UUID mover = position.getCurrentTurn();
 
     position.selectPiece(move.from, mover);
@@ -192,6 +209,26 @@ public final class SearchBot implements ChessBot {
 
     position.toggleTurn();
     return position;
+  }
+
+  /** Loads a position and re-applies the spent leaps its FEN has no field for. */
+  private ChessGame load(String fen, Set<PieceColor> spent) {
+    ChessGame position = engine.positionFromFen(fen);
+    for (PieceColor color : spent) {
+      position.markKingsLeapUsed(color);
+    }
+    return position;
+  }
+
+  /** @return the colours whose King's Leap is used in this position */
+  private static Set<PieceColor> kingsLeapSpent(ChessGame position) {
+    Set<PieceColor> spent = EnumSet.noneOf(PieceColor.class);
+    for (PieceColor color : PieceColor.values()) {
+      if (position.hasUsedKingsLeap(color)) {
+        spent.add(color);
+      }
+    }
+    return spent;
   }
 
   private List<ScoredMove> rootMoves(ChessGame position, PieceColor side) {

@@ -354,10 +354,19 @@ public final class ChessGameHolder {
     String fen = chessGame.toFen();
     UUID gameId = chessGame.getGameId();
 
+    // A FEN cannot say whether a King's Leap is spent, so that travels alongside it. Read here,
+    // on the thread that owns the board, for the same reason the FEN is.
+    java.util.Set<PieceColor> kingsLeapSpent = java.util.EnumSet.noneOf(PieceColor.class);
+    for (PieceColor color : PieceColor.values()) {
+      if (chessGame.hasUsedKingsLeap(color)) {
+        kingsLeapSpent.add(color);
+      }
+    }
+
     Scheduler.async(
         plugin,
         () -> {
-          String chosen = bot.chooseMove(fen);
+          String chosen = bot.chooseMove(fen, kingsLeapSpent);
           Scheduler.global(plugin, () -> applyBotMove(bot, gameId, chosen));
         });
   }
