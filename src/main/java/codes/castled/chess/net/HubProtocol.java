@@ -37,6 +37,12 @@ public final class HubProtocol {
   public static final String WEB_MOVE = "WEB_MOVE";
   public static final String REJECTED = "REJECTED";
 
+  /**
+   * The {@code code} on a {@link #REJECTED} frame when another live server already holds this
+   * server's key. Unlike other refusals it is recoverable: the server mints a new key and rejoins.
+   */
+  public static final String DUPLICATE_KEY = "DUPLICATE_KEY";
+
   /** Field naming the message type on every frame. */
   public static final String TYPE = "type";
 

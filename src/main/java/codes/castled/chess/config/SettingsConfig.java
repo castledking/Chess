@@ -96,6 +96,18 @@ public final class SettingsConfig extends Config {
       return existing;
     }
 
+    return regenerateServerKey();
+  }
+
+  /**
+   * Replaces this server's network identity with a newly generated key and saves it.
+   *
+   * <p>Used when the hub reports the current key already in use by another live server, which
+   * happens when settings.yml is copied between servers. Must run on a server thread.
+   *
+   * @return the new key
+   */
+  public String regenerateServerKey() {
     String generated = java.util.UUID.randomUUID().toString();
     config.set("network.server-key", generated);
     save();

@@ -36,7 +36,7 @@ public final class Chess extends JavaPlugin {
     SettingsConfig settings = new SettingsConfig(this);
     UiConfig ui = new UiConfig(this);
 
-    network = NetworkFactory.create(this, settings.getNetworkSettings());
+    network = NetworkFactory.create(this, settings.getNetworkSettings(), settings::regenerateServerKey);
     network.start();
 
     EasterEggRules easterEggRules = settings.getEasterEggRules();

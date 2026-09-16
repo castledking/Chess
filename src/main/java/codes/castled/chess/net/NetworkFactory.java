@@ -17,9 +17,12 @@ public final class NetworkFactory {
   /**
    * @param plugin the plugin, for logging and scheduling
    * @param settings the configured hub link
+   * @param keyRenewer replaces the saved server key with a new one and returns it, for when the key
+   *     turns out to be shared with another server
    * @return the network to use, which is {@link OfflineNetwork} when this server should not join
    */
-  public static ChessNetwork create(Chess plugin, HubNetwork.NetworkSettings settings) {
+  public static ChessNetwork create(
+      Chess plugin, HubNetwork.NetworkSettings settings, java.util.function.Supplier<String> keyRenewer) {
     if (!settings.enabled()) {
       return new OfflineNetwork();
     }
@@ -52,6 +55,6 @@ public final class NetworkFactory {
                   + "sent in cleartext.");
     }
 
-    return new HubNetwork(plugin, settings);
+    return new HubNetwork(plugin, settings, keyRenewer);
   }
 }

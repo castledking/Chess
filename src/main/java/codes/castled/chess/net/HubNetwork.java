@@ -20,6 +20,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 /**
  * Links this server to the others through a central hub.
@@ -34,6 +37,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * <p>Reconnection is automatic and backs off, since a hub restart should not require restarting
  * every server attached to it.
+ *
+ * <p>A server whose settings.yml was copied from another shares that server's key. The hub keeps
+ * whichever connected first and refuses the other with {@link HubProtocol#DUPLICATE_KEY}; the
+ * refused server then mints a key of its own and rejoins as a separate server.
  */
 public final class HubNetwork implements ChessNetwork {
 
@@ -41,14 +48,28 @@ public final class HubNetwork implements ChessNetwork {
   private static final long MIN_RETRY_SECONDS = 5;
   private static final long MAX_RETRY_SECONDS = 300;
 
+  /**
+   * How many fresh keys one run will mint. One is normally enough; the cap only matters if
+   * something keeps refusing every new key, which would otherwise rewrite settings.yml forever.
+   */
+  static final int MAX_KEY_RENEWALS = 3;
+
   private final Chess plugin;
   private final NetworkSettings settings;
+  private final Supplier<String> keyRenewer;
 
   /** Every remote player, keyed by uuid. Written by the network thread, read by server threads. */
   private final Map<UUID, RemotePlayer> roster = new ConcurrentHashMap<>();
 
   private final AtomicBoolean running = new AtomicBoolean();
-  private volatile WebSocket socket;
+  /**
+   * The link in use, or null. Callbacks from a socket that is no longer this one are ignored, so a
+   * close arriving late from an old connection cannot tear down or double-schedule the new one.
+   */
+  private final AtomicReference<WebSocket> socket = new AtomicReference<>();
+
+  private final AtomicInteger keyRenewals = new AtomicInteger();
+  private volatile String serverKey;
   private volatile long retrySeconds = MIN_RETRY_SECONDS;
   private volatile WebChallengeListener challengeListener;
   private volatile WebMoveListener moveListener;
@@ -56,9 +77,15 @@ public final class HubNetwork implements ChessNetwork {
   /** Frames can arrive split across several callbacks, so text is accumulated until complete. */
   private final StringBuilder incoming = new StringBuilder();
 
-  public HubNetwork(Chess plugin, NetworkSettings settings) {
+  /**
+   * @param keyRenewer replaces this server's saved key with a new one and returns it. Called on the
+   *     global region thread, since it writes settings.yml.
+   */
+  public HubNetwork(Chess plugin, NetworkSettings settings, Supplier<String> keyRenewer) {
     this.plugin = plugin;
     this.settings = settings;
+    this.keyRenewer = keyRenewer;
+    this.serverKey = settings.serverKey();
   }
 
   @Override
@@ -72,8 +99,7 @@ public final class HubNetwork implements ChessNetwork {
   @Override
   public void stop() {
     running.set(false);
-    WebSocket open = socket;
-    socket = null;
+    WebSocket open = socket.getAndSet(null);
     if (open != null) {
       open.sendClose(WebSocket.NORMAL_CLOSURE, "shutting down");
     }
@@ -82,7 +108,7 @@ public final class HubNetwork implements ChessNetwork {
 
   @Override
   public boolean isConnected() {
-    WebSocket open = socket;
+    WebSocket open = socket.get();
     return open != null && !open.isOutputClosed();
   }
 
@@ -166,7 +192,7 @@ public final class HubNetwork implements ChessNetwork {
       return;
     }
 
-    URI uri = URI.create(settings.hubUrl() + HubProtocol.PATH + "?key=" + settings.serverKey());
+    URI uri = URI.create(settings.hubUrl() + HubProtocol.PATH + "?key=" + serverKey);
 
     HttpClient.newBuilder()
         .connectTimeout(CONNECT_TIMEOUT)
@@ -189,7 +215,7 @@ public final class HubNetwork implements ChessNetwork {
                 return;
               }
 
-              socket = opened;
+              // The listener recorded the socket as it opened, before this callback could run.
               retrySeconds = MIN_RETRY_SECONDS;
               plugin.getLogger().info("Chess network: connected as '" + settings.label() + "'.");
 
@@ -246,7 +272,7 @@ public final class HubNetwork implements ChessNetwork {
   }
 
   private void send(JsonObject frame) {
-    WebSocket open = socket;
+    WebSocket open = socket.get();
     if (open != null) {
       open.sendText(frame.toString(), true);
     }
@@ -271,6 +297,19 @@ public final class HubNetwork implements ChessNetwork {
       case HubProtocol.WEB_MOVE -> handleWebMove(frame);
       case HubProtocol.REJECTED -> {
         String reason = frame.has("reason") ? frame.get("reason").getAsString() : "no reason given";
+        if (shouldRenewKey(frame, keyRenewals.get())) {
+          keyRenewals.incrementAndGet();
+          plugin
+              .getLogger()
+              .warning(
+                  "Chess network: another server is connected with this server's key, most likely "
+                      + "because settings.yml was copied from it. Generating a new key and rejoining "
+                      + "as a separate server.");
+          // The hub closes the link straight after refusing, and that close schedules the
+          // reconnect several seconds out, so the new key is in place well before it is used.
+          codes.castled.chess.util.Scheduler.global(plugin, () -> serverKey = keyRenewer.get());
+          return;
+        }
         plugin.getLogger().warning("Chess network: the hub refused this server (" + reason + ").");
         running.set(false);
       }
@@ -329,12 +368,9 @@ public final class HubNetwork implements ChessNetwork {
     if (frame.has("players")) {
       for (var element : frame.getAsJsonArray("players")) {
         JsonObject entry = element.getAsJsonObject();
+        // The hub leaves this server's own players out of the roster it sends here, and names
+        // servers by a hash rather than their key, so there is nothing of our own to skip.
         String serverId = entry.get("serverId").getAsString();
-
-        // The hub echoes every server; skip our own so local players are never listed as remote.
-        if (serverId.equalsIgnoreCase(settings.serverKey())) {
-          continue;
-        }
 
         UUID uuid = UUID.fromString(entry.get("uuid").getAsString());
         String label = entry.has("server") ? entry.get("server").getAsString() : serverId;
@@ -344,6 +380,17 @@ public final class HubNetwork implements ChessNetwork {
 
     roster.clear();
     roster.putAll(replacement);
+  }
+
+  /**
+   * @param frame a REJECTED frame from the hub
+   * @param renewalsSoFar how many keys this run has already minted
+   * @return whether the refusal is one a fresh key fixes, and there are renewals left to try it
+   */
+  static boolean shouldRenewKey(JsonObject frame, int renewalsSoFar) {
+    return frame.has("code")
+        && HubProtocol.DUPLICATE_KEY.equals(frame.get("code").getAsString())
+        && renewalsSoFar < MAX_KEY_RENEWALS;
   }
 
   private String rootCause(Throwable failure) {
@@ -360,6 +407,7 @@ public final class HubNetwork implements ChessNetwork {
 
     @Override
     public void onOpen(WebSocket webSocket) {
+      socket.set(webSocket);
       webSocket.request(1);
     }
 
@@ -381,7 +429,9 @@ public final class HubNetwork implements ChessNetwork {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-      socket = null;
+      if (!socket.compareAndSet(webSocket, null)) {
+        return null; // An old connection, or one onError already dealt with.
+      }
       roster.clear();
       if (running.get()) {
         plugin.getLogger().info("Chess network: hub closed the link (" + reason + "); reconnecting.");
@@ -392,7 +442,9 @@ public final class HubNetwork implements ChessNetwork {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-      socket = null;
+      if (!socket.compareAndSet(webSocket, null)) {
+        return;
+      }
       roster.clear();
       if (running.get()) {
         plugin.getLogger().warning("Chess network: link failed (" + rootCause(error) + ").");
